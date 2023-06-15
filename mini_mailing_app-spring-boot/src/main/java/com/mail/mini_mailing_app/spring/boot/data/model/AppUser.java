@@ -19,4 +19,6 @@ public class AppUser {
     @Column(unique = true)
     private String email;
     private String password;
+    @Enumerated(EnumType.STRING)
+    private Role role;
 }

@@ -24,6 +24,8 @@ public class User {
     @Column(unique = true)
     private String phoneNumber;
     private LocalDate dateOfBirth;
+    private int age;
+    @Enumerated(EnumType.STRING)
     private Gender gender;
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<Sent> sentMessages = new ArrayList<>();

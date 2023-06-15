@@ -1,9 +1,6 @@
 package com.mail.mini_mailing_app.spring.boot.data.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -22,5 +19,6 @@ public class Message {
     private String subject;
     private String messageBody;
     private LocalDateTime dateTime;
+    @Enumerated(EnumType.STRING)
     private MessageType messageType;
 }
