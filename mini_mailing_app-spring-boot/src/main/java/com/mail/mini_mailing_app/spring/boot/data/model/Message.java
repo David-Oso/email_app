@@ -22,4 +22,5 @@ public class Message {
     private String subject;
     private String messageBody;
     private LocalDateTime dateTime;
+    private MessageType messageType;
 }
