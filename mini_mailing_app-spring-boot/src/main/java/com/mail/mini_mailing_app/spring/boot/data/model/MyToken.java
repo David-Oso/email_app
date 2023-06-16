@@ -21,7 +21,7 @@ public class MyToken {
     @Column(unique = true)
     private String token;
     private final LocalDateTime createdAt = LocalDateTime.now();
-    private LocalDateTime expirationTime = createdAt.plusMinutes(5L);
+    private final LocalDateTime expirationTime = createdAt.plusMinutes(10L);
 
 //    public MyToken(AppUser appUser, String token){
 //        this.appUser = appUser;

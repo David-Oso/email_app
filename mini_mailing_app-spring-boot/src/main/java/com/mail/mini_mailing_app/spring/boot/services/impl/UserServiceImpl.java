@@ -2,6 +2,8 @@ package com.mail.mini_mailing_app.spring.boot.services.impl;
 
 import com.mail.mini_mailing_app.spring.boot.data.dto.request.RegisterUserRequest;
 import com.mail.mini_mailing_app.spring.boot.data.dto.request.SmsRequest;
+import com.mail.mini_mailing_app.spring.boot.data.dto.request.VerificationRequest;
+import com.mail.mini_mailing_app.spring.boot.data.dto.response.AuthenticationResponse;
 import com.mail.mini_mailing_app.spring.boot.data.model.AppUser;
 import com.mail.mini_mailing_app.spring.boot.data.model.MyToken;
 import com.mail.mini_mailing_app.spring.boot.data.model.Role;
@@ -10,17 +12,21 @@ import com.mail.mini_mailing_app.spring.boot.data.repository.TokenRepository;
 import com.mail.mini_mailing_app.spring.boot.data.repository.UserRepository;
 import com.mail.mini_mailing_app.spring.boot.exception.AlreadyExistsException;
 import com.mail.mini_mailing_app.spring.boot.exception.EmailAppException;
+import com.mail.mini_mailing_app.spring.boot.exception.NotFoundException;
+import com.mail.mini_mailing_app.spring.boot.exception.VerificationException;
 import com.mail.mini_mailing_app.spring.boot.services.AppUserService;
 import com.mail.mini_mailing_app.spring.boot.services.UserService;
 import com.mail.mini_mailing_app.spring.boot.twilio.SmsSender;
 import com.mail.mini_mailing_app.spring.boot.utilities.MailAppUtils;
-import lombok.AllArgsConstructor;
+import jakarta.validation.Valid;import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.Period;
 import java.time.format.DateTimeFormatter;
+import java.util.Optional;
 
 
 @Service
@@ -33,14 +39,15 @@ public class UserServiceImpl  implements UserService {
     private final ModelMapper modelMapper;
 
     @Override
-    public String registerUser(RegisterUserRequest request) {
+    public String registerUser(@Valid RegisterUserRequest request) {
         AppUser appUser = appUserService.getBy(request.getPhoneNumber()).orElse(null);
         if(appUser != null){
-            return checkWhetherUserIsEnableAndNotLocked(appUser);            
+            return checkWhetherUserIsEnableAndNotLocked(appUser);
         }else{
             AppUser userDetails = setAppUser(request);
 
             User savedUser = saveNewUser(request, userDetails);
+
             String token = generateAndSaveToken(savedUser.getUserDetails());
             String message = getVerificationMessage(savedUser.getUserDetails(), token);
             String to = savedUser.getUserDetails().getPhoneNumber();
@@ -50,6 +57,66 @@ public class UserServiceImpl  implements UserService {
                     Please check your phone to input the token.
                     """;
         }
+    }
+
+    @Override
+    public String verifyUser(@Valid VerificationRequest verificationRequest) {
+        AppUser appUser = appUserService.getBy
+                (verificationRequest.getPhoneNUmber()).orElse(null);
+        if (appUser == null)throw new VerificationException("Invalid phone number");
+        Optional<MyToken> receivedToken = validateReceivedToken(verificationRequest.getVerificationToken(), appUser);
+        User user = getUserByAppUser(appUser).orElse(null);
+        if(user == null)throw new NotFoundException("User not found");
+        else{
+            saveVerifiedUser(verificationRequest.getEmail(), appUser, user);
+//            send mail to the user
+            tokenRepository.delete(receivedToken.get());
+        }
+        return "Verification Successful";
+    }
+
+    private void saveVerifiedUser(String email, AppUser appUser, User user) {
+        appUser.setEmail(email);
+        appUser.setBlocked(false);
+        appUser.setEnabled(true);
+        user.setUserDetails(appUser);
+        user.setCreatedAt(LocalDateTime.now());
+        userRepository.save(user);
+    }
+
+    private Optional<MyToken> validateReceivedToken(String token, AppUser appUser) {
+        Optional<MyToken> receivedToken = tokenRepository.findMyTokenByAppUserAndToken
+                (appUser, token);
+        if(receivedToken.isEmpty())throw new VerificationException("Invalid token");
+        else if(receivedToken.get().getExpirationTime().isBefore(LocalDateTime.now())){
+            tokenRepository.delete(receivedToken.get());
+            throw new VerificationException("Token is expired");
+        }
+        return receivedToken;
+    }
+
+    private Optional<User> getUserByAppUser(AppUser appUser) {
+        return userRepository.findByUserDetails(appUser);
+    }
+
+    @Override
+    public AuthenticationResponse login(String email, String poneNumber) {
+        return null;
+    }
+
+    @Override
+    public String resendVerificationToken(String phoneNumber, String message) {
+        sendSms(phoneNumber, message);
+        return """
+                Another verification token has been sent to you phone
+                Please, enter the verification token to enable your account.
+                Note: The token will expired after 10 minutes
+                """;
+    }
+
+    @Override
+    public User getUserById(Long userId) {
+        return null;
     }
 
     private User saveNewUser(RegisterUserRequest request, AppUser userDetails) {
@@ -66,7 +133,6 @@ public class UserServiceImpl  implements UserService {
 
     private AppUser setAppUser(RegisterUserRequest request) {
         AppUser userDetails = modelMapper.map(request, AppUser.class);
-        userDetails.setPhoneNumber(request.getPhoneNumber());
         userDetails.setRole(Role.USER);
         return userDetails;
     }
@@ -75,9 +141,16 @@ public class UserServiceImpl  implements UserService {
         return Period.between(date, LocalDate.now()).getYears();
     }
 
-    private LocalDate convertToLocalDate(String date) {
-        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-        return LocalDate.parse(date, dateTimeFormatter);
+    private LocalDate convertToLocalDate(String dateOfBirth) {
+//        if(dateOfBirth == null)throw new
+//                EmailAppException("Date of birth cannot be null");
+//        else{
+            DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+            LocalDate date = LocalDate.parse(dateOfBirth, dateTimeFormatter);
+            if(date.isAfter(LocalDate.now()))
+                throw new EmailAppException("Date must be in the past");
+            return date;
+//        }
     }
 
     private String checkWhetherUserIsEnableAndNotLocked(AppUser appUser) {
@@ -89,7 +162,7 @@ public class UserServiceImpl  implements UserService {
             throw new AlreadyExistsException(String.format(
                     "user with email %s already exists", appUser.getEmail()));
 
-        else if (appUser.isBlocked())
+        else if (appUser.isBlocked() && appUser.isEnabled())
             throw new EmailAppException(
                     "Account registered with this email is blocked");
 
@@ -99,6 +172,8 @@ public class UserServiceImpl  implements UserService {
     }
 
     private String generateAndSaveToken(AppUser appUser) {
+        Optional<MyToken> existingToken = tokenRepository.findMyTokenByAppUser(appUser);
+        existingToken.ifPresent(tokenRepository::delete);
         String generatedToken = MailAppUtils.generateRandomString(6);
         MyToken myToken = MyToken.builder()
                 .appUser(appUser)
@@ -114,7 +189,7 @@ public class UserServiceImpl  implements UserService {
                 to verify your phone number
                             %s
                 Note: the token expires after 10 minutes
-                """.toString(), appUser.getFirstName(), token);
+                """, appUser.getFirstName(), token);
     }
 
 
@@ -124,21 +199,5 @@ public class UserServiceImpl  implements UserService {
         smsRequest.setRecipientPhoneNumber(phoneNumber);
         smsRequest.setMessage(message);
         smsSender.sendSms(smsRequest);
-    }
-
-
-    @Override
-    public String resendVerificationToken(String phoneNumber, String message) {
-        sendSms(phoneNumber, message);
-        return """
-                Another verification token has been sent to you phone
-                Please, enter the verification token to enable your account.
-                Note: The token will expired after 10 minutes
-                """;
-    }
-
-    @Override
-    public User getUserById(Long userId) {
-        return null;
     }
 }

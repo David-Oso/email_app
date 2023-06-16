@@ -30,11 +30,11 @@ public class User {
     private Gender gender;
     private String profileImage;
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-    private List<Sent> sentMessages = new ArrayList<>();
+    private final List<Sent> sentMessages = new ArrayList<>();
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-    private List<Inbox> receivedMessages = new ArrayList<>();
+    private final List<Inbox> receivedMessages = new ArrayList<>();
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-    private List<Draft> drafts = new ArrayList<>();
+    private final List<Draft> drafts = new ArrayList<>();
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

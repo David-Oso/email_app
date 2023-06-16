@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @Builder
 @Getter
-public class RegisterResponse {
+public class AuthenticationResponse {
     private String message;
     private boolean isSuccess;
 }
