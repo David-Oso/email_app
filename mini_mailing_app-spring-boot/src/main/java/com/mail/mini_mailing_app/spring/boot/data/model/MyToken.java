@@ -18,6 +18,7 @@ public class MyToken {
     private Long id;
     @OneToOne(fetch = FetchType.LAZY)
     private AppUser appUser;
+    @Column(unique = true)
     private String token;
     private final LocalDateTime createdAt = LocalDateTime.now();
     private LocalDateTime expirationTime = createdAt.plusMinutes(5L);

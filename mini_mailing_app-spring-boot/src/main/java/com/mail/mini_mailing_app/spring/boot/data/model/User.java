@@ -22,8 +22,8 @@ public class User {
     private Long id;
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private AppUser userDetails;
-    @Column(unique = true)
-    private String phoneNumber;
+//    @Column(unique = true)
+//    private String phoneNumber;
     private LocalDate dateOfBirth;
     private int age;
     @Enumerated(EnumType.STRING)

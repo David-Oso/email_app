@@ -21,7 +21,7 @@ class UserServiceImplTest {
         registerUserRequest.setLastName("Temz");
         registerUserRequest.setFirstName("Ema");
         registerUserRequest.setMiddleName("Bolunle");
-        registerUserRequest.setPhoneNumber("+2349087678906");
+        registerUserRequest.setPhoneNumber("+2349030400837");
         registerUserRequest.setDateOfBirth("21/03/2000");
     }
 

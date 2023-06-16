@@ -43,7 +43,8 @@ public class UserServiceImpl  implements UserService {
             User savedUser = saveNewUser(request, userDetails);
             String token = generateAndSaveToken(savedUser.getUserDetails());
             String message = getVerificationMessage(savedUser.getUserDetails(), token);
-            sendSms(savedUser.getPhoneNumber(), message);
+            String to = savedUser.getUserDetails().getPhoneNumber();
+            sendSms(to, message);
             return """
                     An activation token has been sent to you account.
                     Please check your phone to input the token.
@@ -65,6 +66,7 @@ public class UserServiceImpl  implements UserService {
 
     private AppUser setAppUser(RegisterUserRequest request) {
         AppUser userDetails = modelMapper.map(request, AppUser.class);
+        userDetails.setPhoneNumber(request.getPhoneNumber());
         userDetails.setRole(Role.USER);
         return userDetails;
     }
@@ -112,8 +114,10 @@ public class UserServiceImpl  implements UserService {
                 to verify your phone number
                             %s
                 Note: the token expires after 10 minutes
-                """, appUser.getFirstName(), token);
+                """.toString(), appUser.getFirstName(), token);
     }
+
+
 
     private void sendSms(String phoneNumber, String message) {
         SmsRequest smsRequest = new SmsRequest();
