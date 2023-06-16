@@ -15,6 +15,7 @@ import java.util.List;
 @Getter
 @Setter
 @Entity
+@Table(name = "_user")
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,14 +28,13 @@ public class User {
     private int age;
     @Enumerated(EnumType.STRING)
     private Gender gender;
+    private String profileImage;
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<Sent> sentMessages = new ArrayList<>();
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<Inbox> receivedMessages = new ArrayList<>();
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<Draft> drafts = new ArrayList<>();
-    private boolean isLocked = false;
-    private boolean isEnabled = false;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

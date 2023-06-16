@@ -1,17 +1,15 @@
-package com.mail.mini_mailing_app.spring.boot.data.model.token;
+package com.mail.mini_mailing_app.spring.boot.data.model;
 
 import com.mail.mini_mailing_app.spring.boot.data.model.AppUser;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 @Getter
 @Setter
 public class MyToken {
@@ -23,4 +21,9 @@ public class MyToken {
     private String token;
     private final LocalDateTime createdAt = LocalDateTime.now();
     private LocalDateTime expirationTime = createdAt.plusMinutes(5L);
+
+//    public MyToken(AppUser appUser, String token){
+//        this.appUser = appUser;
+//        this.token = token;
+//    }
 }

@@ -19,6 +19,10 @@ public class AppUser {
     @Column(unique = true)
     private String email;
     private String password;
+    @Column(unique = true)
+    private String phoneNumber;
     @Enumerated(EnumType.STRING)
     private Role role;
+    private boolean isBlocked = true;
+    private boolean isEnabled = false;
 }
