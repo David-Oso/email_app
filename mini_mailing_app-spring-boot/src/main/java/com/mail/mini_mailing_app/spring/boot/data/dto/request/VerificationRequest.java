@@ -29,5 +29,8 @@ public class VerificationRequest {
     @Pattern(message = "Invalid emal format", regexp = EMAIL_REGEX_STRING)
     private String email;
 
+    @NotNull(message = "field verification token cannot be null")
+    @NotBlank(message = "field verification token cannot be blank")
+    @NotEmpty(message = "field verification token cannot be empty")
     private String verificationToken;
 }

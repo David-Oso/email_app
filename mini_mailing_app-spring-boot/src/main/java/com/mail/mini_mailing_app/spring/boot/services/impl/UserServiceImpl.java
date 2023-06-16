@@ -39,7 +39,7 @@ public class UserServiceImpl  implements UserService {
     private final ModelMapper modelMapper;
 
     @Override
-    public String registerUser(@Valid RegisterUserRequest request) {
+    public String registerUser(RegisterUserRequest request) {
         AppUser appUser = appUserService.getBy(request.getPhoneNumber()).orElse(null);
         if(appUser != null){
             return checkWhetherUserIsEnableAndNotLocked(appUser);
@@ -60,7 +60,7 @@ public class UserServiceImpl  implements UserService {
     }
 
     @Override
-    public String verifyUser(@Valid VerificationRequest verificationRequest) {
+    public String verifyUser(VerificationRequest verificationRequest) {
         AppUser appUser = appUserService.getBy
                 (verificationRequest.getPhoneNUmber()).orElse(null);
         if (appUser == null)throw new VerificationException("Invalid phone number");
@@ -75,25 +75,6 @@ public class UserServiceImpl  implements UserService {
         return "Verification Successful";
     }
 
-    private void saveVerifiedUser(String email, AppUser appUser, User user) {
-        appUser.setEmail(email);
-        appUser.setBlocked(false);
-        appUser.setEnabled(true);
-        user.setUserDetails(appUser);
-        user.setCreatedAt(LocalDateTime.now());
-        userRepository.save(user);
-    }
-
-    private Optional<MyToken> validateReceivedToken(String token, AppUser appUser) {
-        Optional<MyToken> receivedToken = tokenRepository.findMyTokenByAppUserAndToken
-                (appUser, token);
-        if(receivedToken.isEmpty())throw new VerificationException("Invalid token");
-        else if(receivedToken.get().getExpirationTime().isBefore(LocalDateTime.now())){
-            tokenRepository.delete(receivedToken.get());
-            throw new VerificationException("Token is expired");
-        }
-        return receivedToken;
-    }
 
     private Optional<User> getUserByAppUser(AppUser appUser) {
         return userRepository.findByUserDetails(appUser);
@@ -105,7 +86,14 @@ public class UserServiceImpl  implements UserService {
     }
 
     @Override
-    public String resendVerificationToken(String phoneNumber, String message) {
+    public String resendVerificationToken(String phoneNumber) {
+        AppUser appUser = appUserService.getBy(phoneNumber)
+                .orElse(null);
+        if (appUser == null)throw new VerificationException("Invalid phone number");
+        String token = generateAndSaveToken(appUser);
+
+        String message = getVerificationMessage(appUser, token);
+
         sendSms(phoneNumber, message);
         return """
                 Another verification token has been sent to you phone
@@ -154,8 +142,6 @@ public class UserServiceImpl  implements UserService {
     }
 
     private String checkWhetherUserIsEnableAndNotLocked(AppUser appUser) {
-        String token = generateAndSaveToken(appUser);
-        String message = getVerificationMessage(appUser, token);
         String to = appUser.getPhoneNumber();
 
         if(appUser.isEnabled() && !appUser.isBlocked())
@@ -167,7 +153,7 @@ public class UserServiceImpl  implements UserService {
                     "Account registered with this email is blocked");
 
         else{
-            return resendVerificationToken(to, message);
+            return resendVerificationToken(to);
         }
     }
 
@@ -192,6 +178,26 @@ public class UserServiceImpl  implements UserService {
                 """, appUser.getFirstName(), token);
     }
 
+
+    private void saveVerifiedUser(String email, AppUser appUser, User user) {
+        appUser.setEmail(email);
+        appUser.setBlocked(false);
+        appUser.setEnabled(true);
+        user.setUserDetails(appUser);
+        user.setCreatedAt(LocalDateTime.now());
+        userRepository.save(user);
+    }
+
+    private Optional<MyToken> validateReceivedToken(String token, AppUser appUser) {
+        Optional<MyToken> receivedToken = tokenRepository.findMyTokenByAppUserAndToken
+                (appUser, token);
+        if(receivedToken.isEmpty())throw new VerificationException("Invalid token");
+        else if(receivedToken.get().getExpirationTime().isBefore(LocalDateTime.now())){
+            tokenRepository.delete(receivedToken.get());
+            throw new VerificationException("Token is expired");
+        }
+        return receivedToken;
+    }
 
 
     private void sendSms(String phoneNumber, String message) {

@@ -10,7 +10,8 @@ public interface UserService {
     String registerUser(RegisterUserRequest request);
     String verifyUser(VerificationRequest verificationRequest);
     AuthenticationResponse login(String email, String poneNumber);
-    String resendVerificationToken(String phoneNumber, String message);
+
+    String resendVerificationToken(String phoneNumber);
 
     User getUserById(Long userId);
 }
