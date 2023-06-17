@@ -21,6 +21,7 @@ class UserServiceImplTest {
     private VerificationRequest verificationRequest1;
     private VerificationRequest verificationRequest2;
     private MailRequest mailRequest;
+    private MailRequest draftRequest;
     @BeforeEach
     void setUp() {
         registerUserRequest1 = new RegisterUserRequest();
@@ -56,6 +57,11 @@ class UserServiceImplTest {
         mailRequest.setEmail("tolaniesther112@gmail.com");
         mailRequest.setSubject("Testing Mail");
         mailRequest.setMessageBody("I am testing whether this mail will be sent");
+
+        draftRequest = new MailRequest();
+        draftRequest.setUserId(2L);
+        draftRequest.setSubject("Drafting a mail");
+        draftRequest.setMessageBody("Testing from my app on draft message");
     }
 
     @Test
@@ -83,6 +89,13 @@ class UserServiceImplTest {
     void sendMailTest(){
         MailResponse response = userService.sendMail(mailRequest);
         assertThat(response.getMessage()).isEqualTo("Mail sent successfully");
+        assertThat(response.isSuccess()).isEqualTo(true);
+    }
+
+    @Test
+    void draftMailTest(){
+        MailResponse response = userService.draftMail(draftRequest);
+        assertThat(response.getMessage()).isEqualTo("Mail drafted successfully");
         assertThat(response.isSuccess()).isEqualTo(true);
     }
 

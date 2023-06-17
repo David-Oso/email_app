@@ -118,6 +118,25 @@ public class UserServiceImpl  implements UserService {
     }
 
     @Override
+    public MailResponse draftMail(MailRequest mailRequest) {
+        User user = getUserById(mailRequest.getUserId());
+
+        Message message = new Message();
+        message.setSubject(mailRequest.getSubject());
+        message.setMessageBody(mailRequest.getMessageBody());
+        message.setCreatedAt(LocalDateTime.now());
+        message.setMessageType(MessageType.DRAFTED);
+
+        Draft draft = new Draft();
+        draft.setMessage(message);
+        user.getDrafts().add(draft);
+        userRepository.save(user);
+        return MailResponse.builder()
+                .message("Mail drafted successfully")
+                .isSuccess(true)
+                .build();
+    }
+    @Override
     public Inbox getInboxById(long userId, long mailId) {
         User user = getUserById(userId);
         List<Inbox> receivedMessages = user.getReceivedMessages();
@@ -126,10 +145,17 @@ public class UserServiceImpl  implements UserService {
         }
         throw new NotFoundException(String.format("Mail with id %d not found.", mailId));
     }
+
     @Override
-    public MailResponse draftMail(MailRequest mailRequest) {
+    public Sent getSentMailById(long userId, long mailId) {
         return null;
     }
+
+    @Override
+    public Draft getDraftedMailById(long userId, long mailId) {
+        return null;
+    }
+
 
     @Override
     public String resendVerificationToken(String phoneNumber) {

@@ -31,7 +31,7 @@ public class User {
     private final List<Sent> sentMessages = new ArrayList<>();
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
     private final List<Inbox> receivedMessages = new ArrayList<>();
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
     private final List<Draft> drafts = new ArrayList<>();
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
