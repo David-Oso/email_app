@@ -18,7 +18,7 @@ public class Sent {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String toEmail;
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private Message message;
 //    private String subject;
 //    private String messageBody;

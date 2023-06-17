@@ -4,8 +4,10 @@ import com.mail.mini_mailing_app.spring.boot.data.dto.request.MailRequest;
 import com.mail.mini_mailing_app.spring.boot.data.dto.request.RegisterUserRequest;
 import com.mail.mini_mailing_app.spring.boot.data.dto.request.VerificationRequest;
 import com.mail.mini_mailing_app.spring.boot.data.dto.response.MailResponse;
+import com.mail.mini_mailing_app.spring.boot.data.model.Draft;
 import com.mail.mini_mailing_app.spring.boot.data.model.Gender;
 import com.mail.mini_mailing_app.spring.boot.data.model.Inbox;
+import com.mail.mini_mailing_app.spring.boot.data.model.Sent;
 import com.mail.mini_mailing_app.spring.boot.services.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -100,10 +102,23 @@ class UserServiceImplTest {
     }
 
     @Test
-    void getUserByIdTest(){
+    void getInboxByIdTest(){
         Inbox inbox = userService.getInboxById(2L, 1L);
         assertThat(inbox.getMessage().getSubject()).isEqualTo("Testing Mail");
     }
+
+    @Test
+    void getSentByIdTest(){
+        Sent sent = userService.getSentMailById(1L, 1L);
+        assertThat(sent.getMessage().getSubject()).isEqualTo("Testing Mail");
+    }
+
+    @Test
+    void getDraftByIdTest(){
+        Draft draft = userService.getDraftedMailById(2L, 1L);
+        assertThat(draft.getMessage().getSubject()).isEqualTo("Drafting a mail");
+    }
+
     @Test
     void getUserById() {
     }

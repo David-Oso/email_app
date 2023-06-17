@@ -143,17 +143,27 @@ public class UserServiceImpl  implements UserService {
         for(Inbox inbox : receivedMessages){
             if (inbox.getId() == mailId)return inbox;
         }
-        throw new NotFoundException(String.format("Mail with id %d not found.", mailId));
+        throw new NotFoundException(String.format("Inbox with id %d not found.", mailId));
     }
 
     @Override
     public Sent getSentMailById(long userId, long mailId) {
-        return null;
+        User user = getUserById(userId);
+        List<Sent> sentMessages = user.getSentMessages();
+        for(Sent sent : sentMessages){
+            if(sent.getId() == mailId)return sent;
+        }
+        throw new NotFoundException(String.format("Sent message with id %d not found", mailId));
     }
 
     @Override
     public Draft getDraftedMailById(long userId, long mailId) {
-        return null;
+        User user = getUserById(userId);
+        List<Draft> drafts = user.getDrafts();
+        for(Draft draft : drafts){
+            if (draft.getId() == mailId)return draft;
+        }
+        throw new NotFoundException(String.format("Draft message with id %d not found", mailId));
     }
 
 
