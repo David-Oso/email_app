@@ -18,7 +18,7 @@ public class Message {
     private Long id;
     private String subject;
     private String messageBody;
-    private LocalDateTime dateTime;
+    private LocalDateTime createdAt;
     @Enumerated(EnumType.STRING)
     private MessageType messageType;
 }

@@ -1,8 +1,11 @@
 package com.mail.mini_mailing_app.spring.boot.services.impl;
 
+import com.mail.mini_mailing_app.spring.boot.data.dto.request.MailRequest;
 import com.mail.mini_mailing_app.spring.boot.data.dto.request.RegisterUserRequest;
 import com.mail.mini_mailing_app.spring.boot.data.dto.request.VerificationRequest;
+import com.mail.mini_mailing_app.spring.boot.data.dto.response.MailResponse;
 import com.mail.mini_mailing_app.spring.boot.data.model.Gender;
+import com.mail.mini_mailing_app.spring.boot.data.model.Inbox;
 import com.mail.mini_mailing_app.spring.boot.services.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,6 +20,7 @@ class UserServiceImplTest {
     private RegisterUserRequest registerUserRequest2;
     private VerificationRequest verificationRequest1;
     private VerificationRequest verificationRequest2;
+    private MailRequest mailRequest;
     @BeforeEach
     void setUp() {
         registerUserRequest1 = new RegisterUserRequest();
@@ -39,13 +43,19 @@ class UserServiceImplTest {
 
         verificationRequest1 = new VerificationRequest();
         verificationRequest1.setPhoneNUmber("+2349030400837");
-        verificationRequest1.setVerificationToken("NZr_ldqz");
+        verificationRequest1.setVerificationToken("-qwaoeGZ");
         verificationRequest1.setEmail("ematemz001@gmail.com");
 
         verificationRequest2 = new VerificationRequest();
         verificationRequest2.setPhoneNUmber("+2349009876567");
-        verificationRequest2.setVerificationToken("pRPCpMg1");
+        verificationRequest2.setVerificationToken("THqh2CMA");
         verificationRequest2.setEmail("tolaniesther112@gmail.com");
+
+        mailRequest = new MailRequest();
+        mailRequest.setUserId(1L);
+        mailRequest.setEmail("tolaniesther112@gmail.com");
+        mailRequest.setSubject("Testing Mail");
+        mailRequest.setMessageBody("I am testing whether this mail will be sent");
     }
 
     @Test
@@ -62,13 +72,25 @@ class UserServiceImplTest {
 
     @Test
     void verify() {
-//        String response1 = userService.verifyUser(verificationRequest1);
+        String response1 = userService.verifyUser(verificationRequest1);
         String response2 = userService.verifyUser(verificationRequest2);
 
-//        assertThat(response1).isEqualTo("Verification Successful");
+        assertThat(response1).isEqualTo("Verification Successful");
         assertThat(response2).isEqualTo("Verification Successful");
     }
 
+    @Test
+    void sendMailTest(){
+        MailResponse response = userService.sendMail(mailRequest);
+        assertThat(response.getMessage()).isEqualTo("Mail sent successfully");
+        assertThat(response.isSuccess()).isEqualTo(true);
+    }
+
+    @Test
+    void getUserByIdTest(){
+        Inbox inbox = userService.getInboxById(2L, 1L);
+        assertThat(inbox.getMessage().getSubject()).isEqualTo("Testing Mail");
+    }
     @Test
     void getUserById() {
     }

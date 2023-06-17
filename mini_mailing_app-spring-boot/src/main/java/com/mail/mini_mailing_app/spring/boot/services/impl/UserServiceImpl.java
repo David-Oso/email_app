@@ -1,19 +1,14 @@
 package com.mail.mini_mailing_app.spring.boot.services.impl;
 
+import com.mail.mini_mailing_app.spring.boot.data.dto.request.MailRequest;
 import com.mail.mini_mailing_app.spring.boot.data.dto.request.RegisterUserRequest;
 import com.mail.mini_mailing_app.spring.boot.data.dto.request.SmsRequest;
 import com.mail.mini_mailing_app.spring.boot.data.dto.request.VerificationRequest;
 import com.mail.mini_mailing_app.spring.boot.data.dto.response.AuthenticationResponse;
-import com.mail.mini_mailing_app.spring.boot.data.model.AppUser;
-import com.mail.mini_mailing_app.spring.boot.data.model.MyToken;
-import com.mail.mini_mailing_app.spring.boot.data.model.Role;
-import com.mail.mini_mailing_app.spring.boot.data.model.User;
-import com.mail.mini_mailing_app.spring.boot.data.repository.TokenRepository;
-import com.mail.mini_mailing_app.spring.boot.data.repository.UserRepository;
-import com.mail.mini_mailing_app.spring.boot.exception.AlreadyExistsException;
-import com.mail.mini_mailing_app.spring.boot.exception.EmailAppException;
-import com.mail.mini_mailing_app.spring.boot.exception.NotFoundException;
-import com.mail.mini_mailing_app.spring.boot.exception.VerificationException;
+import com.mail.mini_mailing_app.spring.boot.data.dto.response.MailResponse;
+import com.mail.mini_mailing_app.spring.boot.data.model.*;
+import com.mail.mini_mailing_app.spring.boot.data.repository.*;
+import com.mail.mini_mailing_app.spring.boot.exception.*;
 import com.mail.mini_mailing_app.spring.boot.services.AppUserService;
 import com.mail.mini_mailing_app.spring.boot.services.UserService;
 import com.mail.mini_mailing_app.spring.boot.twilio.SmsSender;
@@ -26,6 +21,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Period;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Optional;
 
 
@@ -36,6 +32,9 @@ public class UserServiceImpl  implements UserService {
     private final UserRepository userRepository;
     private final SmsSender smsSender;
     private final TokenRepository tokenRepository;
+    private final InboxRepository inboxRepository;
+    private final SentRepository sentRepository;
+    private final DraftRepository draftRepository;
     private final ModelMapper modelMapper;
 
     @Override
@@ -86,6 +85,53 @@ public class UserServiceImpl  implements UserService {
     }
 
     @Override
+    public MailResponse sendMail(MailRequest mailRequest) {
+        User from = getUserById(mailRequest.getUserId());
+        AppUser sender = appUserService.getUserByEmail(mailRequest.getEmail());
+        User receiver = userRepository.findByUserDetails(sender).orElse(null);
+        if(receiver == null)throw new RuntimeException();
+
+        Message message = new Message();
+        message.setSubject(mailRequest.getSubject());
+        message.setMessageBody(mailRequest.getMessageBody());
+        message.setCreatedAt(LocalDateTime.now());
+
+        Sent sentMessage = new Sent();
+        sentMessage.setToEmail(sender.getEmail());
+        sentMessage.setMessage(message);
+        sentMessage.getMessage().setMessageType(MessageType.SENT);
+        from.getSentMessages().add(sentMessage);
+        userRepository.save(from);
+
+        Inbox inbox = new Inbox();
+        inbox.setMessage(message);
+        String email = from.getUserDetails().getEmail();
+        inbox.setFromEmail(email);
+        inbox.getMessage().setMessageType(MessageType.RECEIVED);
+        receiver.getReceivedMessages().add(inbox);
+
+        userRepository.save(receiver);
+        return MailResponse.builder()
+                .message("Mail sent successfully")
+                .isSuccess(true)
+                .build();
+    }
+
+    @Override
+    public Inbox getInboxById(long userId, long mailId) {
+        User user = getUserById(userId);
+        List<Inbox> receivedMessages = user.getReceivedMessages();
+        for(Inbox inbox : receivedMessages){
+            if (inbox.getId() == mailId)return inbox;
+        }
+        throw new NotFoundException(String.format("Mail with id %d not found.", mailId));
+    }
+    @Override
+    public MailResponse draftMail(MailRequest mailRequest) {
+        return null;
+    }
+
+    @Override
     public String resendVerificationToken(String phoneNumber) {
         AppUser appUser = appUserService.getBy(phoneNumber)
                 .orElse(null);
@@ -104,7 +150,8 @@ public class UserServiceImpl  implements UserService {
 
     @Override
     public User getUserById(Long userId) {
-        return null;
+        return userRepository.findById(userId).orElseThrow(
+                ()-> new NotFoundException("User with this id is not found"));
     }
 
     private User saveNewUser(RegisterUserRequest request, AppUser userDetails) {
