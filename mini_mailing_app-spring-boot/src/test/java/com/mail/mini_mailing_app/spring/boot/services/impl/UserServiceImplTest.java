@@ -3,6 +3,7 @@ package com.mail.mini_mailing_app.spring.boot.services.impl;
 import com.mail.mini_mailing_app.spring.boot.data.dto.request.MailRequest;
 import com.mail.mini_mailing_app.spring.boot.data.dto.request.RegisterUserRequest;
 import com.mail.mini_mailing_app.spring.boot.data.dto.request.VerificationRequest;
+import com.mail.mini_mailing_app.spring.boot.data.dto.response.AuthenticationResponse;
 import com.mail.mini_mailing_app.spring.boot.data.dto.response.MailResponse;
 import com.mail.mini_mailing_app.spring.boot.data.model.Draft;
 import com.mail.mini_mailing_app.spring.boot.data.model.Gender;
@@ -85,6 +86,13 @@ class UserServiceImplTest {
 
         assertThat(response1).isEqualTo("Verification Successful");
         assertThat(response2).isEqualTo("Verification Successful");
+    }
+
+    @Test
+    void loginTest(){
+        AuthenticationResponse response = userService.login("ematemz001@gmail.com", "password");
+        assertThat(response.getMessage()).isEqualTo("Authentication Successful");
+
     }
 
     @Test

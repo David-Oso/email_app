@@ -36,12 +36,12 @@
 			<version>9.4.0</version>
 		</dependency>
 
-		<dependency>
-			<groupId>com.sendinblue</groupId>
-			<artifactId>sib-api-v3-sdk</artifactId>
-			<version>6.0.0</version>
-			<scope>compile</scope>
-		</dependency>
+<!--		<dependency>-->
+<!--			<groupId>com.sendinblue</groupId>-->
+<!--			<artifactId>sib-api-v3-sdk</artifactId>-->
+<!--			<version>6.0.0</version>-->
+<!--			<scope>compile</scope>-->
+<!--		</dependency>-->
 
 		<dependency>
 			<groupId>com.mysql</groupId>
@@ -53,6 +53,18 @@
 			<groupId>org.modelmapper</groupId>
 			<artifactId>modelmapper</artifactId>
 			<version>3.1.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.cloudinary</groupId>
+			<artifactId>cloudinary</artifactId>
+			<version>1.0.14</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.cloudinary</groupId>
+			<artifactId>cloudinary-http44</artifactId>
+			<version>1.33.0</version>
 		</dependency>
 
 <!--		<dependency>-->

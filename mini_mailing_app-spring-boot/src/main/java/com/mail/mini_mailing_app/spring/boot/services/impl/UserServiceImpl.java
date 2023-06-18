@@ -1,16 +1,16 @@
 package com.mail.mini_mailing_app.spring.boot.services.impl;
 
-import com.mail.mini_mailing_app.spring.boot.data.dto.request.MailRequest;
-import com.mail.mini_mailing_app.spring.boot.data.dto.request.RegisterUserRequest;
-import com.mail.mini_mailing_app.spring.boot.data.dto.request.SmsRequest;
-import com.mail.mini_mailing_app.spring.boot.data.dto.request.VerificationRequest;
+import com.mail.mini_mailing_app.spring.boot.data.dto.request.*;
+import com.mail.mini_mailing_app.spring.boot.data.dto.response.ApiResponse;
 import com.mail.mini_mailing_app.spring.boot.data.dto.response.AuthenticationResponse;
 import com.mail.mini_mailing_app.spring.boot.data.dto.response.MailResponse;
+import com.mail.mini_mailing_app.spring.boot.data.dto.response.UpdateUserResponse;
 import com.mail.mini_mailing_app.spring.boot.data.model.*;
 import com.mail.mini_mailing_app.spring.boot.data.repository.*;
 import com.mail.mini_mailing_app.spring.boot.exception.*;
 import com.mail.mini_mailing_app.spring.boot.services.AppUserService;
 import com.mail.mini_mailing_app.spring.boot.services.UserService;
+import com.mail.mini_mailing_app.spring.boot.services.cloudinary.CloudinaryService;
 import com.mail.mini_mailing_app.spring.boot.twilio.SmsSender;
 import com.mail.mini_mailing_app.spring.boot.utilities.MailAppUtils;
 import jakarta.validation.Valid;import lombok.AllArgsConstructor;
@@ -36,6 +36,7 @@ public class UserServiceImpl  implements UserService {
     private final SentRepository sentRepository;
     private final DraftRepository draftRepository;
     private final ModelMapper modelMapper;
+    private final CloudinaryService cloudinaryService;
 
     @Override
     public String registerUser(RegisterUserRequest request) {
@@ -80,10 +81,22 @@ public class UserServiceImpl  implements UserService {
     }
 
     @Override
-    public AuthenticationResponse login(String email, String poneNumber) {
-        return null;
+    public AuthenticationResponse login(String email, String password) {
+        AppUser appUser = appUserService.getUserByEmail(email);
+        User authenticatedUser = userRepository.findByUserDetails(appUser).orElseThrow(
+                ()-> new NotFoundException("User with this user details not found"));
+        String savedPassword = authenticatedUser.getUserDetails().getPassword();
+        if(savedPassword.equals(password))return AuthenticationResponse.builder()
+                .message("Authentication Successful")
+                .isSuccess(true)
+                .build();
+        throw new LoginException("Incorrect Password");
     }
-
+    @Override
+    public User getUserById(Long userId) {
+        return userRepository.findById(userId).orElseThrow(
+                ()-> new NotFoundException("User with this id is not found"));
+    }
     @Override
     public MailResponse sendMail(MailRequest mailRequest) {
         User from = getUserById(mailRequest.getUserId());
@@ -91,26 +104,10 @@ public class UserServiceImpl  implements UserService {
         User receiver = userRepository.findByUserDetails(sender).orElse(null);
         if(receiver == null)throw new RuntimeException();
 
-        Message message = new Message();
-        message.setSubject(mailRequest.getSubject());
-        message.setMessageBody(mailRequest.getMessageBody());
-        message.setCreatedAt(LocalDateTime.now());
+        Message message = createMessage(mailRequest.getSubject(), mailRequest.getMessageBody());
+        saveSentMessage(from, sender, message);
 
-        Sent sentMessage = new Sent();
-        sentMessage.setToEmail(sender.getEmail());
-        sentMessage.setMessage(message);
-        sentMessage.getMessage().setMessageType(MessageType.SENT);
-        from.getSentMessages().add(sentMessage);
-        userRepository.save(from);
-
-        Inbox inbox = new Inbox();
-        inbox.setMessage(message);
-        String email = from.getUserDetails().getEmail();
-        inbox.setFromEmail(email);
-        inbox.getMessage().setMessageType(MessageType.RECEIVED);
-        receiver.getReceivedMessages().add(inbox);
-
-        userRepository.save(receiver);
+        saveReceivedMessage(from, receiver, message);
         return MailResponse.builder()
                 .message("Mail sent successfully")
                 .isSuccess(true)
@@ -121,10 +118,7 @@ public class UserServiceImpl  implements UserService {
     public MailResponse draftMail(MailRequest mailRequest) {
         User user = getUserById(mailRequest.getUserId());
 
-        Message message = new Message();
-        message.setSubject(mailRequest.getSubject());
-        message.setMessageBody(mailRequest.getMessageBody());
-        message.setCreatedAt(LocalDateTime.now());
+        Message message = createMessage(mailRequest.getSubject(), mailRequest.getMessageBody());
         message.setMessageType(MessageType.DRAFTED);
 
         Draft draft = new Draft();
@@ -137,33 +131,72 @@ public class UserServiceImpl  implements UserService {
                 .build();
     }
     @Override
-    public Inbox getInboxById(long userId, long mailId) {
+    public Inbox getInboxById(long userId, long inboxId) {
         User user = getUserById(userId);
         List<Inbox> receivedMessages = user.getReceivedMessages();
         for(Inbox inbox : receivedMessages){
-            if (inbox.getId() == mailId)return inbox;
+            if (inbox.getId() == inboxId)return inbox;
         }
-        throw new NotFoundException(String.format("Inbox with id %d not found.", mailId));
+        throw new NotFoundException("Inbox with this id not found.");
     }
 
     @Override
-    public Sent getSentMailById(long userId, long mailId) {
+    public Sent getSentMailById(long userId, long sentMailId) {
         User user = getUserById(userId);
         List<Sent> sentMessages = user.getSentMessages();
         for(Sent sent : sentMessages){
-            if(sent.getId() == mailId)return sent;
+            if(sent.getId() == sentMailId)return sent;
         }
-        throw new NotFoundException(String.format("Sent message with id %d not found", mailId));
+        throw new NotFoundException("Sent message with this id not found.");
     }
 
     @Override
-    public Draft getDraftedMailById(long userId, long mailId) {
+    public Draft getDraftedMailById(long userId, long draftId) {
         User user = getUserById(userId);
         List<Draft> drafts = user.getDrafts();
         for(Draft draft : drafts){
-            if (draft.getId() == mailId)return draft;
+            if (draft.getId() == draftId)return draft;
         }
-        throw new NotFoundException(String.format("Draft message with id %d not found", mailId));
+        throw new NotFoundException("Draft message with this id not found.");
+    }
+
+    @Override
+    public UpdateUserResponse updateUser(UpdateUserRequest request) {
+        User user = getUserById(request.getUserId());
+        AppUser appUser = user.getUserDetails();
+        appUser.setFirstName(request.getFirstName());
+        appUser.setMiddleName(request.getMiddleName());
+        appUser.setLastName(request.getLastName());
+        String imageUrl = cloudinaryService.upload(request.getImage());
+        user.setProfileImage(imageUrl);
+        userRepository.save(user);
+        return UpdateUserResponse.builder()
+                .message("User Update Successful")
+                .isSuccess(true)
+                .build();
+    }
+
+    @Override
+    public ApiResponse updateUserMail(String phoneNumber) {
+        return null;
+    }
+
+    @Override
+    public UpdateUserResponse resetPassword(ResetPasswordRequest request) {
+//        send mail
+        return null;
+    }
+
+    @Override
+    public UpdateUserResponse changeEmail(ResetEmailRequest request) {
+//        send mail
+        return null;
+    }
+
+    @Override
+    public UpdateUserResponse changePhoneNumber(ResetPhoneNumberRequest request) {
+//        send mail
+        return null;
     }
 
 
@@ -184,11 +217,7 @@ public class UserServiceImpl  implements UserService {
                 """;
     }
 
-    @Override
-    public User getUserById(Long userId) {
-        return userRepository.findById(userId).orElseThrow(
-                ()-> new NotFoundException("User with this id is not found"));
-    }
+
 
     private User saveNewUser(RegisterUserRequest request, AppUser userDetails) {
         LocalDate dateOfBirth = convertToLocalDate(request.getDateOfBirth());
@@ -289,4 +318,32 @@ public class UserServiceImpl  implements UserService {
         smsRequest.setMessage(message);
         smsSender.sendSms(smsRequest);
     }
+
+    private static Message createMessage(String subject, String messageBody) {
+        Message message = new Message();
+        message.setSubject(subject);
+        message.setMessageBody(messageBody);
+        message.setCreatedAt(LocalDateTime.now());
+        return message;
+    }
+
+    private void saveSentMessage(User from, AppUser sender, Message message) {
+        Sent sentMessage = new Sent();
+        sentMessage.setToEmail(sender.getEmail());
+        sentMessage.setMessage(message);
+        sentMessage.getMessage().setMessageType(MessageType.SENT);
+        from.getSentMessages().add(sentMessage);
+        userRepository.save(from);
+    }
+
+    private void saveReceivedMessage(User from, User receiver, Message message) {
+        Inbox inbox = new Inbox();
+        inbox.setMessage(message);
+        String email = from.getUserDetails().getEmail();
+        inbox.setFromEmail(email);
+        inbox.getMessage().setMessageType(MessageType.RECEIVED);
+        receiver.getReceivedMessages().add(inbox);
+        userRepository.save(receiver);
+    }
+
 }
