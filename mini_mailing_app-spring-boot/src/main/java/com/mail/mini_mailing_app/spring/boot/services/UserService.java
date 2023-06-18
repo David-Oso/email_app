@@ -21,11 +21,9 @@ public interface UserService {
     Sent getSentMailById(long userId, long sentMailId);
     Draft getDraftedMailById(long userId, long draftId);
     UpdateUserResponse updateUser(UpdateUserRequest request);
-    ApiResponse updateUserMail(String phoneNumber);
+    ApiResponse sendResetPasswordMail(String phoneNumber);
     UpdateUserResponse resetPassword(ResetPasswordRequest request);
-    UpdateUserResponse changeEmail(ResetEmailRequest request);
-    UpdateUserResponse changePhoneNumber(ResetPhoneNumberRequest request);
-
     String resendVerificationToken(String phoneNumber);
+//    String delete();
 
 }

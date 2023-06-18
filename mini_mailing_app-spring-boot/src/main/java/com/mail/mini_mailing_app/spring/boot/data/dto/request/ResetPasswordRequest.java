@@ -23,6 +23,11 @@ public class ResetPasswordRequest {
     @Pattern(message = "Enter your registered phone number", regexp = PHONE_NUMBER_REGEX)
     private String phoneNumber;
 
+    @NotNull(message = "field token cannot be null")
+    @NotBlank(message = "field token cannot be blank")
+    @NotEmpty(message = "field token cannot be empty")
+    private String token;
+
     @NotNull(message = "field new password cannot be null")
     @NotEmpty(message = "field new password cannot be empty")
     @NotBlank(message = "field new password cannot be blank")

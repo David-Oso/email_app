@@ -1,9 +1,7 @@
 package com.mail.mini_mailing_app.spring.boot.services.impl;
 
-import com.mail.mini_mailing_app.spring.boot.data.dto.request.MailRequest;
-import com.mail.mini_mailing_app.spring.boot.data.dto.request.RegisterUserRequest;
-import com.mail.mini_mailing_app.spring.boot.data.dto.request.UpdateUserRequest;
-import com.mail.mini_mailing_app.spring.boot.data.dto.request.VerificationRequest;
+import com.mail.mini_mailing_app.spring.boot.data.dto.request.*;
+import com.mail.mini_mailing_app.spring.boot.data.dto.response.ApiResponse;
 import com.mail.mini_mailing_app.spring.boot.data.dto.response.AuthenticationResponse;
 import com.mail.mini_mailing_app.spring.boot.data.dto.response.MailResponse;
 import com.mail.mini_mailing_app.spring.boot.data.dto.response.UpdateUserResponse;
@@ -32,6 +30,7 @@ class UserServiceImplTest {
     private MailRequest mailRequest;
     private MailRequest draftRequest;
     private UpdateUserRequest updateuserRequest;
+    private ResetPasswordRequest resetPasswordRequest;
     @BeforeEach
     void setUp() {
         registerUserRequest1 = new RegisterUserRequest();
@@ -79,6 +78,12 @@ class UserServiceImplTest {
         updateuserRequest.setLastName("UpdatedLastName");
         updateuserRequest.setMiddleName("UpdatedMiddleName");
         updateuserRequest.setImage(uploadImage(TEST_IMAGE_LOCATION));
+
+        resetPasswordRequest = new ResetPasswordRequest();
+        resetPasswordRequest.setToken("NaAkYd7q");
+        resetPasswordRequest.setPhoneNumber("+2349030400837");
+        resetPasswordRequest.setNewPassword("newPassword");
+        resetPasswordRequest.setConfirmNewPassword("newPassword");
     }
 
     private MultipartFile uploadImage(String imageLocation){
@@ -162,6 +167,22 @@ class UserServiceImplTest {
     void updateUserTest(){
         UpdateUserResponse response = userService.updateUser(updateuserRequest);
         assertThat(response.getMessage()).isEqualTo("User Update Successful");
+        assertThat(response.isSuccess()).isEqualTo(true);
+    }
+
+    @Test
+    void sentResetPasswordMailTest(){
+        ApiResponse response = userService.sendResetPasswordMail("+2349030400837");
+        assertThat(response.getMessage()).isEqualTo("Check your phone for the token to reset your password");
+        assertThat(response.isSuccess()).isEqualTo(true);
+    }
+
+
+
+    @Test
+    void resetPasswordTest(){
+        UpdateUserResponse response = userService.resetPassword(resetPasswordRequest);
+        assertThat(response.getMessage()).isEqualTo("Password changed successfully");
         assertThat(response.isSuccess()).isEqualTo(true);
     }
 }

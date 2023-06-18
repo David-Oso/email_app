@@ -178,26 +178,37 @@ public class UserServiceImpl  implements UserService {
     }
 
     @Override
-    public ApiResponse updateUserMail(String phoneNumber) {
-        return null;
+    public ApiResponse sendResetPasswordMail(String phoneNumber) {
+        AppUser appUser = appUserService.getUserByPhoneNumber(phoneNumber);
+        String token = generateAndSaveToken(appUser);
+        String message = String.format("""
+                
+                To change your password, please enter the following characters to verify that it is you
+                                            %s
+                                             
+                """, token);
+        sendSms(phoneNumber, message);
+        return ApiResponse.builder()
+                .message("Check your phone for the token to reset your password")
+                .isSuccess(true)
+                .build();
     }
 
     @Override
     public UpdateUserResponse resetPassword(ResetPasswordRequest request) {
-//        send mail
-        return null;
-    }
-
-    @Override
-    public UpdateUserResponse changeEmail(ResetEmailRequest request) {
-//        send mail
-        return null;
-    }
-
-    @Override
-    public UpdateUserResponse changePhoneNumber(ResetPhoneNumberRequest request) {
-//        send mail
-        return null;
+        AppUser appUser = appUserService.getUserByPhoneNumber(request.getPhoneNumber());
+//        String token = generateAndSaveToken(appUser);
+        validateReceivedToken(request.getToken(), appUser);
+        appUser.setPassword(request.getNewPassword());
+        if (!appUser.getPassword().equals(request.getConfirmNewPassword()))
+            throw new EmailAppException("Password doesn't match");
+        User user = getUserByAppUser(appUser).orElse(null);
+        if(user!= null)
+            userRepository.save(user);
+        return UpdateUserResponse.builder()
+                .message("Password changed successfully")
+                .isSuccess(true)
+                .build();
     }
 
 
