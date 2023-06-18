@@ -11,8 +11,9 @@ public class MailAppUtils {
     public static final String NAME_REGEX = "^[A-Z][a-zA-Z]{0,39}$";
     public static final String PHONE_NUMBER_REGEX = "^(\\+?234)[789]\\d{9}$";
     public static final String DATE_OF_BIRTH_REGEX = "dd/MM/yyyy";
-    public static final String App_EMAIL = "noreply@mailingapp.net";
+    public static final String APP_EMAIL = "noreply@mailingapp.net";
     public static final String APP_NAME = "mailing_app";
+    public static final String TEST_IMAGE_LOCATION = "C:\\Users\\User\\IdeaProjects\\mini_mailing_app(spring boot)\\mini_mailing_app-spring-boot\\src\\main\\resources\\static\\pic.jpg";
 
 
     public static String generateRandomString(int length){

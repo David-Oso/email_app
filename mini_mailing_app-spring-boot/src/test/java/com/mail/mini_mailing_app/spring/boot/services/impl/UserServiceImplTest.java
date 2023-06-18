@@ -2,19 +2,25 @@ package com.mail.mini_mailing_app.spring.boot.services.impl;
 
 import com.mail.mini_mailing_app.spring.boot.data.dto.request.MailRequest;
 import com.mail.mini_mailing_app.spring.boot.data.dto.request.RegisterUserRequest;
+import com.mail.mini_mailing_app.spring.boot.data.dto.request.UpdateUserRequest;
 import com.mail.mini_mailing_app.spring.boot.data.dto.request.VerificationRequest;
 import com.mail.mini_mailing_app.spring.boot.data.dto.response.AuthenticationResponse;
 import com.mail.mini_mailing_app.spring.boot.data.dto.response.MailResponse;
-import com.mail.mini_mailing_app.spring.boot.data.model.Draft;
-import com.mail.mini_mailing_app.spring.boot.data.model.Gender;
-import com.mail.mini_mailing_app.spring.boot.data.model.Inbox;
-import com.mail.mini_mailing_app.spring.boot.data.model.Sent;
+import com.mail.mini_mailing_app.spring.boot.data.dto.response.UpdateUserResponse;
+import com.mail.mini_mailing_app.spring.boot.data.model.*;
 import com.mail.mini_mailing_app.spring.boot.services.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+
+import static com.mail.mini_mailing_app.spring.boot.utilities.MailAppUtils.TEST_IMAGE_LOCATION;
 import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest
 class UserServiceImplTest {
@@ -25,6 +31,7 @@ class UserServiceImplTest {
     private VerificationRequest verificationRequest2;
     private MailRequest mailRequest;
     private MailRequest draftRequest;
+    private UpdateUserRequest updateuserRequest;
     @BeforeEach
     void setUp() {
         registerUserRequest1 = new RegisterUserRequest();
@@ -65,7 +72,25 @@ class UserServiceImplTest {
         draftRequest.setUserId(2L);
         draftRequest.setSubject("Drafting a mail");
         draftRequest.setMessageBody("Testing from my app on draft message");
+
+        updateuserRequest = new UpdateUserRequest();
+        updateuserRequest.setUserId(1L);
+        updateuserRequest.setFirstName("UpdatedFirstName");
+        updateuserRequest.setLastName("UpdatedLastName");
+        updateuserRequest.setMiddleName("UpdatedMiddleName");
+        updateuserRequest.setImage(uploadImage(TEST_IMAGE_LOCATION));
     }
+
+    private MultipartFile uploadImage(String imageLocation){
+        try{
+        MultipartFile file = new MockMultipartFile("test_image",
+                new FileInputStream(imageLocation));
+        return file;
+        }catch (IOException exception){
+            throw new RuntimeException(exception.getMessage());
+        }
+    }
+
 
     @Test
     void registerUser() {
@@ -129,5 +154,14 @@ class UserServiceImplTest {
 
     @Test
     void getUserById() {
+        User user = userService.getUserById(1L);
+        assertThat(user.getUserDetails().getFirstName()).isEqualTo(registerUserRequest1.getFirstName());
+    }
+
+    @Test
+    void updateUserTest(){
+        UpdateUserResponse response = userService.updateUser(updateuserRequest);
+        assertThat(response.getMessage()).isEqualTo("User Update Successful");
+        assertThat(response.isSuccess()).isEqualTo(true);
     }
 }
