@@ -187,24 +187,42 @@ class UserServiceImplTest {
     @Test
     void deleteInboxByIdTest(){
         Long inboxCount = userService.inboxCount();
-        assertThat(inboxCount.equals(2L));
+        assertThat(inboxCount).isEqualTo(2L);
         userService.deleteInboxById(2L, 1L);
-        assertThat(inboxCount.equals(1L));
+        assertThat(inboxCount).isEqualTo(1L);
     }
 
     @Test
     void deleteSentMessageByIdTest(){
         Long sentCount = userService.sentCount();
-        assertThat(sentCount.equals(2L));
+        assertThat(sentCount).isEqualTo(2L);
         userService.deleteSentMailById(1L, 1L);
-        assertThat(sentCount.equals(1L));
+        assertThat(sentCount).isEqualTo(1L);
     }
 
     @Test
     void deleteDraftByIdTest(){
         Long draftCount = userService.draftCount();
-        assertThat(draftCount.equals(2L));
+        assertThat(draftCount).isEqualTo(2L);
         userService.deleteDraftById(2L, 1L);
-        assertThat(draftCount.equals(1L));
+        assertThat(draftCount).isEqualTo(1L);
+    }
+    
+    @Test
+    void deleteAllInboxTest(){
+        userService.deleteAllInbox(2L);
+        assertThat(userService.inboxCount()).isEqualTo(0L);
+    }
+
+    @Test
+    void deleteAllSentTest(){
+        userService.deleteAllSent(1L);
+        assertThat(userService.sentCount()).isEqualTo(0L);
+    }
+    
+    @Test
+    void deleteAllDraftsTest(){
+        userService.deleteAllDrafts(2L);
+        assertThat(userService.draftCount()).isEqualTo(0L);
     }
 }

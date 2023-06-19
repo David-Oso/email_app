@@ -243,7 +243,9 @@ public class UserServiceImpl  implements UserService {
 
     @Override
     public void deleteAllInbox(long userId) {
-
+        User user = getUserById(userId);
+        user.getReceivedMessages().clear();
+        userRepository.save(user);
     }
 
     @Override
