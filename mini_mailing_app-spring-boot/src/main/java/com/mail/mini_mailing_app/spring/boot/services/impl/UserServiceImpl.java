@@ -167,6 +167,7 @@ public class UserServiceImpl  implements UserService {
         appUser.setFirstName(request.getFirstName());
         appUser.setMiddleName(request.getMiddleName());
         appUser.setLastName(request.getLastName());
+        appUser.setPassword(request.getPassword());
         String imageUrl = cloudinaryService.upload(request.getImage());
         user.setProfileImage(imageUrl);
         user.setUpdatedAt(LocalDateTime.now());
@@ -178,14 +179,12 @@ public class UserServiceImpl  implements UserService {
     }
 
     @Override
-    public ApiResponse sendResetPasswordMail(String phoneNumber) {
+    public ApiResponse sendResetPasswordSms(String phoneNumber) {
         AppUser appUser = appUserService.getUserByPhoneNumber(phoneNumber);
         String token = generateAndSaveToken(appUser);
         String message = String.format("""
-                
                 To change your password, please enter the following characters to verify that it is you
-                                            %s
-                                             
+                               %s
                 """, token);
         sendSms(phoneNumber, message);
         return ApiResponse.builder()
@@ -196,19 +195,25 @@ public class UserServiceImpl  implements UserService {
 
     @Override
     public UpdateUserResponse resetPassword(ResetPasswordRequest request) {
-        AppUser appUser = appUserService.getUserByPhoneNumber(request.getPhoneNumber());
-//        String token = generateAndSaveToken(appUser);
-        validateReceivedToken(request.getToken(), appUser);
+        AppUser appUser = appUserService.getBy(request.getPhoneNumber()).orElse(null);
+        if(appUser == null)throw new NotFoundException("Invalid phone number");
+        Optional<MyToken> myToken = validateReceivedToken(request.getToken(), appUser);
         appUser.setPassword(request.getNewPassword());
-        if (!appUser.getPassword().equals(request.getConfirmNewPassword()))
+        if(!appUser.getPassword().equals(request.getConfirmNewPassword()))
             throw new EmailAppException("Password doesn't match");
         User user = getUserByAppUser(appUser).orElse(null);
-        if(user!= null)
+        if(user == null)
+            throw new NotFoundException("User not found");
+        else{
+            user.setUserDetails(appUser);
+            user.setUpdatedAt(LocalDateTime.now());
             userRepository.save(user);
-        return UpdateUserResponse.builder()
-                .message("Password changed successfully")
-                .isSuccess(true)
-                .build();
+            tokenRepository.delete(myToken.get());
+            return UpdateUserResponse.builder()
+                    .message("Password changed successfully")
+                    .isSuccess(true)
+                    .build();
+        }
     }
 
 
@@ -271,14 +276,10 @@ public class UserServiceImpl  implements UserService {
         if(appUser.isEnabled() && !appUser.isBlocked())
             throw new AlreadyExistsException(String.format(
                     "user with email %s already exists", appUser.getEmail()));
-
         else if (appUser.isBlocked() && appUser.isEnabled())
             throw new EmailAppException(
                     "Account registered with this email is blocked");
-
-        else{
-            return resendVerificationToken(to);
-        }
+        else return resendVerificationToken(to);
     }
 
     private String generateAndSaveToken(AppUser appUser) {

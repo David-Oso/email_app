@@ -15,7 +15,6 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import static com.mail.mini_mailing_app.spring.boot.utilities.MailAppUtils.TEST_IMAGE_LOCATION;
@@ -78,12 +77,13 @@ class UserServiceImplTest {
         updateuserRequest.setLastName("UpdatedLastName");
         updateuserRequest.setMiddleName("UpdatedMiddleName");
         updateuserRequest.setImage(uploadImage(TEST_IMAGE_LOCATION));
+        updateuserRequest.setPassword("password");
 
         resetPasswordRequest = new ResetPasswordRequest();
-        resetPasswordRequest.setToken("NaAkYd7q");
+        resetPasswordRequest.setToken("KZ3IhWMU");
         resetPasswordRequest.setPhoneNumber("+2349030400837");
-        resetPasswordRequest.setNewPassword("newPassword");
-        resetPasswordRequest.setConfirmNewPassword("newPassword");
+        resetPasswordRequest.setNewPassword("newPassword1");
+        resetPasswordRequest.setConfirmNewPassword("newPassword1");
     }
 
     private MultipartFile uploadImage(String imageLocation){
@@ -171,13 +171,11 @@ class UserServiceImplTest {
     }
 
     @Test
-    void sentResetPasswordMailTest(){
-        ApiResponse response = userService.sendResetPasswordMail("+2349030400837");
+    void sentResetPasswordSmsTest(){
+        ApiResponse response = userService.sendResetPasswordSms("+2349030400837");
         assertThat(response.getMessage()).isEqualTo("Check your phone for the token to reset your password");
         assertThat(response.isSuccess()).isEqualTo(true);
     }
-
-
 
     @Test
     void resetPasswordTest(){

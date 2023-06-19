@@ -31,5 +31,6 @@ public class UpdateUserRequest {
 
     @Pattern(message = "last name must be only letters", regexp = NAME_REGEX)
     private String lastName;
+    private String password;
     private MultipartFile image;
 }

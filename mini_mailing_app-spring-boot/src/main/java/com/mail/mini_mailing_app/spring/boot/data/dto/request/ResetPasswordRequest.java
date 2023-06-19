@@ -34,7 +34,7 @@ public class ResetPasswordRequest {
     @Pattern(message = "new password must contain at least " +
             "one uppercase, one lower case one digit and at least one special character", regexp = PASSWORD_REGEX_STRING)
     private String newPassword;
-
+//
     @NotNull(message = "field confirm new password cannot be null")
     @NotEmpty(message = "field confirm new password cannot be empty")
     @NotBlank(message = "field confirm new password cannot be blank")

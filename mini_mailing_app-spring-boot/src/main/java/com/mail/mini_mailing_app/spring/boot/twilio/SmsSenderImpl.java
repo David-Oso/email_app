@@ -29,7 +29,7 @@ public class SmsSenderImpl implements SmsSender{
                 request.getMessage());
         creator.create();
         LOGGER.info("sms sent{}", request);
-        log.info("::::::::::::::::::::MAIL SENT::::::::::::::::::::");
+        log.info("::::::::::::::::::::SMS SENT::::::::::::::::::::");
         return "Sms Sent Successfully";
     }
 
