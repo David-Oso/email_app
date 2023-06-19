@@ -23,6 +23,16 @@ public interface UserService {
     UpdateUserResponse updateUser(UpdateUserRequest request);
     ApiResponse sendResetPasswordSms(String phoneNumber);
     UpdateUserResponse resetPassword(ResetPasswordRequest request);
+    void deleteInboxById(long userId, long inboxId);
+    void deleteSentMailById(long userId, long sentMailId);
+    void deleteDraftById(long userId, long draftId);
+    void deleteAllInbox(long userId);
+    void deleteAllSent(long userId);
+    void deleteAllDrafts(long userId);
+    void deleteUserById(long userId);
+    Long inboxCount();
+    Long sentCount();
+    Long draftCount();
     String resendVerificationToken(String phoneNumber);
 //    String delete();
 

@@ -183,4 +183,12 @@ class UserServiceImplTest {
         assertThat(response.getMessage()).isEqualTo("Password changed successfully");
         assertThat(response.isSuccess()).isEqualTo(true);
     }
+
+    @Test
+    void deleteInboxByIdTest(){
+        Long inboxCount = userService.inboxCount();
+        assertThat(inboxCount.equals(2L));
+        userService.deleteInboxById(2L, 1L);
+        assertThat(inboxCount.equals(1L));
+    }
 }

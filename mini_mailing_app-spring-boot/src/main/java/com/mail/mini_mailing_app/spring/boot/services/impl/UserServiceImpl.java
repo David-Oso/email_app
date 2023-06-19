@@ -216,6 +216,58 @@ public class UserServiceImpl  implements UserService {
         }
     }
 
+    @Override
+    public void deleteInboxById(long userId, long inboxId) {
+        User user = getUserById(userId);
+        List<Inbox> inboxes = user.getReceivedMessages();
+        inboxes.removeIf(inbox -> inbox.getId() == inboxId);
+        userRepository.save(user);
+    }
+
+    @Override
+    public void deleteSentMailById(long userId, long sentMailId) {
+
+    }
+
+    @Override
+    public void deleteDraftById(long userId, long draftId) {
+
+    }
+
+    @Override
+    public void deleteAllInbox(long userId) {
+
+    }
+
+    @Override
+    public void deleteAllSent(long userId) {
+
+    }
+
+    @Override
+    public void deleteAllDrafts(long userId) {
+
+    }
+
+    @Override
+    public void deleteUserById(long userId) {
+
+    }
+
+    @Override
+    public Long inboxCount() {
+        return inboxRepository.count();
+    }
+
+    @Override
+    public Long sentCount() {
+        return sentRepository.count();
+    }
+
+    @Override
+    public Long draftCount() {
+        return draftRepository.count();
+    }
 
     @Override
     public String resendVerificationToken(String phoneNumber) {
