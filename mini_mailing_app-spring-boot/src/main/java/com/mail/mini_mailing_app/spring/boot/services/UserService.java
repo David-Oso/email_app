@@ -30,6 +30,7 @@ public interface UserService {
     void deleteAllSent(long userId);
     void deleteAllDrafts(long userId);
     void deleteUserById(long userId);
+    Long userCount();
     Long inboxCount();
     Long sentCount();
     Long draftCount();

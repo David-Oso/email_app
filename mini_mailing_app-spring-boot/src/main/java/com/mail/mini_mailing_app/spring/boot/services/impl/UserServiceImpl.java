@@ -257,12 +257,19 @@ public class UserServiceImpl  implements UserService {
 
     @Override
     public void deleteAllDrafts(long userId) {
-
+        User user = getUserById(userId);
+        user.getDrafts().clear();
+        userRepository.save(user);
     }
 
     @Override
     public void deleteUserById(long userId) {
+        userRepository.deleteById(userId);
+    }
 
+    @Override
+    public Long userCount() {
+        return userRepository.count();
     }
 
     @Override
