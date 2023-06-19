@@ -226,7 +226,10 @@ public class UserServiceImpl  implements UserService {
 
     @Override
     public void deleteSentMailById(long userId, long sentMailId) {
-
+        User user = getUserById(userId);
+        List<Sent> sentMessages = user.getSentMessages();
+        sentMessages.removeIf(mail -> mail.getId() == sentMailId);
+        userRepository.save(user);
     }
 
     @Override

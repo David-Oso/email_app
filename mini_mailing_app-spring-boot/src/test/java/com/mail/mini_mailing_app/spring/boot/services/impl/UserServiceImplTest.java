@@ -191,4 +191,20 @@ class UserServiceImplTest {
         userService.deleteInboxById(2L, 1L);
         assertThat(inboxCount.equals(1L));
     }
+
+    @Test
+    void deleteSentMessageByIdTest(){
+        Long sentCount = userService.sentCount();
+        assertThat(sentCount.equals(2L));
+        userService.deleteSentMailById(1L, 1L);
+        assertThat(sentCount.equals(1L));
+    }
+
+    @Test
+    void deleteDraftByIdTest(){
+        Long draftCount = userService.draftCount();
+        assertThat(draftCount.equals(2L));
+        userService.deleteDraftById(2L, 1L);
+        assertThat(draftCount.equals(1L));
+    }
 }
