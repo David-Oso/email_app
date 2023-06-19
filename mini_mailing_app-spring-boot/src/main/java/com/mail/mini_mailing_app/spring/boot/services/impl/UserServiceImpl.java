@@ -234,6 +234,10 @@ public class UserServiceImpl  implements UserService {
 
     @Override
     public void deleteDraftById(long userId, long draftId) {
+        User user = getUserById(userId);
+        List<Draft> drafts = user.getDrafts();
+        drafts.removeIf(draft -> draft.getId() == draftId);
+        userRepository.save(user);
 
     }
 
