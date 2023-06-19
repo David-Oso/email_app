@@ -35,6 +35,4 @@ public interface UserService {
     Long sentCount();
     Long draftCount();
     String resendVerificationToken(String phoneNumber);
-//    String delete();
-
 }
