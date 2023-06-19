@@ -225,4 +225,10 @@ class UserServiceImplTest {
         userService.deleteAllDrafts(2L);
         assertThat(userService.draftCount()).isEqualTo(0L);
     }
+
+    @Test
+    void deleteUserById(){
+        userService.deleteUserById(2L);
+        assertThat(userService.userCount()).isEqualTo(1L);
+    }
 }
