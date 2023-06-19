@@ -250,7 +250,9 @@ public class UserServiceImpl  implements UserService {
 
     @Override
     public void deleteAllSent(long userId) {
-
+        User user = getUserById(userId);
+        user.getSentMessages().clear();
+        userRepository.save(user);
     }
 
     @Override
