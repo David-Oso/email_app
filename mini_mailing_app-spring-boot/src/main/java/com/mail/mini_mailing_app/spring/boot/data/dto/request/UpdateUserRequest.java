@@ -19,8 +19,6 @@ import static com.mail.mini_mailing_app.spring.boot.utilities.MailAppUtils.NAME_
 @Setter
 public class UpdateUserRequest {
     @NotNull(message = "field user id cannot be null")
-    @NotEmpty(message = "field user id cannot be empty")
-    @NotBlank(message = "field user id cannot be blank")
     private Long userId;
 
     @Pattern(message = "first name must be only letters", regexp = NAME_REGEX)
@@ -31,6 +29,4 @@ public class UpdateUserRequest {
 
     @Pattern(message = "last name must be only letters", regexp = NAME_REGEX)
     private String lastName;
-    private String password;
-    private MultipartFile image;
 }

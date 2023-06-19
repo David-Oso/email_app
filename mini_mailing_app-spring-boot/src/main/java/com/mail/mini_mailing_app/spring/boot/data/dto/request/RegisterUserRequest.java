@@ -1,14 +1,12 @@
 package com.mail.mini_mailing_app.spring.boot.data.dto.request;
 
 import com.mail.mini_mailing_app.spring.boot.data.model.Gender;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import static com.mail.mini_mailing_app.spring.boot.utilities.MailAppUtils.*;
 
@@ -39,7 +37,9 @@ public class RegisterUserRequest {
     @NotNull(message = "field date of birth cannot be null")
     @NotBlank(message = "field date of birth cannot  be blank")
     @NotEmpty(message = "field date of birth cannote be empty")
-    @Pattern(message = "date must be in the format dd/MM/yyyy", regexp = DATE_OF_BIRTH_REGEX)
+//    @Pattern(message = "date must be in the format dd/MM/yyyy", regexp = DATE_OF_BIRTH_REGEX)
+    @DateTimeFormat(pattern = "dd/MM/yyyy")
+//    @Past(message = "Date must be in the past")
     private String dateOfBirth;
 
 
@@ -50,8 +50,8 @@ public class RegisterUserRequest {
     private String phoneNumber;
 
     @NotNull(message = "field gender cannot be null")
-    @NotEmpty(message = "field gender cannot be empty")
-    @NotBlank(message = "field gender cannot be blank")
+//    @NotEmpty(message = "field gender cannot be empty")
+//    @NotBlank(message = "field gender cannot be blank")
     private Gender gender;
 
     @NotNull(message = "field password cannot be null")

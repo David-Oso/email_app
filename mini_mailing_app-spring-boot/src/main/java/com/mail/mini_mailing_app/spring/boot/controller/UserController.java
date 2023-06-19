@@ -13,6 +13,7 @@ import com.mail.mini_mailing_app.spring.boot.services.UserService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -76,6 +77,12 @@ public class UserController {
     public ResponseEntity<?> updateUser(@Valid @RequestBody UpdateUserRequest request){
         UpdateUserResponse response = userService.updateUser(request);
         return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @PostMapping(value = "upload_image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> uploadImage(@Valid @ModelAttribute UploadImageRequest request){
+        String response = userService.uploadImage(request);
+        return ResponseEntity.ok(response);
     }
     @PostMapping("reset_password_sms")
     public ResponseEntity<?> sendResetPasswordSms(@Valid @RequestParam String phoneNumber){

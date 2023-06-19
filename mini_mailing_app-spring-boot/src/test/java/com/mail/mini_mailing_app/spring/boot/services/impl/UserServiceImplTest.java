@@ -30,6 +30,7 @@ class UserServiceImplTest {
     private MailRequest draftRequest;
     private UpdateUserRequest updateuserRequest;
     private ResetPasswordRequest resetPasswordRequest;
+    private UploadImageRequest uploadImageRequest;
     @BeforeEach
     void setUp() {
         registerUserRequest1 = new RegisterUserRequest();
@@ -76,14 +77,18 @@ class UserServiceImplTest {
         updateuserRequest.setFirstName("UpdatedFirstName");
         updateuserRequest.setLastName("UpdatedLastName");
         updateuserRequest.setMiddleName("UpdatedMiddleName");
-        updateuserRequest.setImage(uploadImage(TEST_IMAGE_LOCATION));
-        updateuserRequest.setPassword("password");
+
+        uploadImageRequest = new UploadImageRequest();
+        uploadImageRequest.setUserId(2L);
+        uploadImageRequest.setImage(uploadImage(TEST_IMAGE_LOCATION));
 
         resetPasswordRequest = new ResetPasswordRequest();
         resetPasswordRequest.setToken("KZ3IhWMU");
         resetPasswordRequest.setPhoneNumber("+2349030400837");
         resetPasswordRequest.setNewPassword("newPassword1");
         resetPasswordRequest.setConfirmNewPassword("newPassword1");
+
+
     }
 
     private MultipartFile uploadImage(String imageLocation){
@@ -168,6 +173,12 @@ class UserServiceImplTest {
         UpdateUserResponse response = userService.updateUser(updateuserRequest);
         assertThat(response.getMessage()).isEqualTo("User Update Successful");
         assertThat(response.isSuccess()).isEqualTo(true);
+    }
+
+    @Test
+    void uploadImageTest(){
+        String response = userService.uploadImage(uploadImageRequest);
+        assertThat(response).isEqualTo("User image uploaded");
     }
 
     @Test

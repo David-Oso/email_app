@@ -167,15 +167,22 @@ public class UserServiceImpl  implements UserService {
         appUser.setFirstName(request.getFirstName());
         appUser.setMiddleName(request.getMiddleName());
         appUser.setLastName(request.getLastName());
-        appUser.setPassword(request.getPassword());
-        String imageUrl = cloudinaryService.upload(request.getImage());
-        user.setProfileImage(imageUrl);
         user.setUpdatedAt(LocalDateTime.now());
         userRepository.save(user);
         return UpdateUserResponse.builder()
                 .message("User Update Successful")
                 .isSuccess(true)
                 .build();
+    }
+
+    @Override
+    public String uploadImage(UploadImageRequest request) {
+        User user = getUserById(request.getUserId());
+        String imageUrl = cloudinaryService.upload(request.getImage());
+        user.setProfileImage(imageUrl);
+        user.setUpdatedAt(LocalDateTime.now());
+        userRepository.save(user);
+        return "User image uploaded";
     }
 
     @Override
