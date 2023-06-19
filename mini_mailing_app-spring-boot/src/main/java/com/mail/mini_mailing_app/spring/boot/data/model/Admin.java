@@ -15,6 +15,8 @@ public class Admin {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @Column(unique = true, nullable = false)
+    private String identity;
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private AppUser userDetails;
 }
