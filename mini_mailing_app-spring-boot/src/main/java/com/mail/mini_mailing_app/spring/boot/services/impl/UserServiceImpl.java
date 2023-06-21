@@ -9,6 +9,7 @@ import com.mail.mini_mailing_app.spring.boot.data.model.*;
 import com.mail.mini_mailing_app.spring.boot.data.repository.*;
 import com.mail.mini_mailing_app.spring.boot.exception.*;
 import com.mail.mini_mailing_app.spring.boot.services.AppUserService;
+import com.mail.mini_mailing_app.spring.boot.services.MyTokenService;
 import com.mail.mini_mailing_app.spring.boot.services.UserService;
 import com.mail.mini_mailing_app.spring.boot.services.cloudinary.CloudinaryService;
 import com.mail.mini_mailing_app.spring.boot.twilio.SmsSender;
@@ -37,6 +38,7 @@ public class UserServiceImpl  implements UserService {
     private final DraftRepository draftRepository;
     private final ModelMapper modelMapper;
     private final CloudinaryService cloudinaryService;
+    private final MyTokenService myTokenService;
 
     @Override
     public String registerUser(RegisterUserRequest request) {
@@ -48,7 +50,7 @@ public class UserServiceImpl  implements UserService {
 
             User savedUser = saveNewUser(request, userDetails);
 
-            String token = generateAndSaveToken(savedUser.getUserDetails());
+            String token = myTokenService.generateAndSaveToken(savedUser.getUserDetails());
             String message = getVerificationMessage(savedUser.getUserDetails(), token);
             String to = savedUser.getUserDetails().getPhoneNumber();
             sendSms(to, message);
@@ -64,13 +66,14 @@ public class UserServiceImpl  implements UserService {
         AppUser appUser = appUserService.getBy
                 (verificationRequest.getPhoneNUmber()).orElse(null);
         if (appUser == null)throw new VerificationException("Invalid phone number");
-        Optional<MyToken> receivedToken = validateReceivedToken(verificationRequest.getVerificationToken(), appUser);
+        Optional<MyToken> receivedToken = myTokenService.validateReceivedToken(verificationRequest.getVerificationToken(), appUser);
         User user = getUserByAppUser(appUser).orElse(null);
         if(user == null)throw new NotFoundException("User not found");
         else{
             saveVerifiedUser(verificationRequest.getEmail(), appUser, user);
 //            send mail to the user
-            tokenRepository.delete(receivedToken.get());
+//            tokenRepository.delete(receivedToken.get());
+            myTokenService.deleteToken(receivedToken.get());
         }
         return "Verification Successful";
     }
@@ -188,7 +191,7 @@ public class UserServiceImpl  implements UserService {
     @Override
     public ApiResponse sendResetPasswordSms(String phoneNumber) {
         AppUser appUser = appUserService.getUserByPhoneNumber(phoneNumber);
-        String token = generateAndSaveToken(appUser);
+        String token = myTokenService.generateAndSaveToken(appUser);
         String message = String.format("""
                 To change your password, please enter the following characters to verify that it is you
                                %s
@@ -204,7 +207,7 @@ public class UserServiceImpl  implements UserService {
     public UpdateUserResponse resetPassword(ResetPasswordRequest request) {
         AppUser appUser = appUserService.getBy(request.getPhoneNumber()).orElse(null);
         if(appUser == null)throw new NotFoundException("Invalid phone number");
-        Optional<MyToken> myToken = validateReceivedToken(request.getToken(), appUser);
+        Optional<MyToken> myToken = myTokenService.validateReceivedToken(request.getToken(), appUser);
         appUser.setPassword(request.getNewPassword());
         if(!appUser.getPassword().equals(request.getConfirmNewPassword()))
             throw new EmailAppException("Password doesn't match");
@@ -215,7 +218,8 @@ public class UserServiceImpl  implements UserService {
             user.setUserDetails(appUser);
             user.setUpdatedAt(LocalDateTime.now());
             userRepository.save(user);
-            tokenRepository.delete(myToken.get());
+//            tokenRepository.delete(myToken.get());
+            myTokenService.deleteToken(myToken.get());
             return UpdateUserResponse.builder()
                     .message("Password changed successfully")
                     .isSuccess(true)
@@ -299,7 +303,7 @@ public class UserServiceImpl  implements UserService {
         AppUser appUser = appUserService.getBy(phoneNumber)
                 .orElse(null);
         if (appUser == null)throw new VerificationException("Invalid phone number");
-        String token = generateAndSaveToken(appUser);
+        String token = myTokenService.generateAndSaveToken(appUser);
 
         String message = getVerificationMessage(appUser, token);
 
@@ -359,17 +363,17 @@ public class UserServiceImpl  implements UserService {
         else return resendVerificationToken(to);
     }
 
-    private String generateAndSaveToken(AppUser appUser) {
-        Optional<MyToken> existingToken = tokenRepository.findMyTokenByAppUser(appUser);
-        existingToken.ifPresent(tokenRepository::delete);
-        String generatedToken = MailAppUtils.generateRandomString(6);
-        MyToken myToken = MyToken.builder()
-                .appUser(appUser)
-                .token(generatedToken)
-                .build();
-        tokenRepository.save(myToken);
-        return generatedToken;
-    }
+//    private String generateAndSaveToken(AppUser appUser) {
+//        Optional<MyToken> existingToken = tokenRepository.findMyTokenByAppUser(appUser);
+//        existingToken.ifPresent(tokenRepository::delete);
+//        String generatedToken = MailAppUtils.generateRandomString(6);
+//        MyToken myToken = MyToken.builder()
+//                .appUser(appUser)
+//                .token(generatedToken)
+//                .build();
+//        tokenRepository.save(myToken);
+//        return generatedToken;
+//    }
 
     private static String getVerificationMessage(AppUser appUser, String token) {
         return String.format("""
@@ -390,16 +394,16 @@ public class UserServiceImpl  implements UserService {
         userRepository.save(user);
     }
 
-    private Optional<MyToken> validateReceivedToken(String token, AppUser appUser) {
-        Optional<MyToken> receivedToken = tokenRepository.findMyTokenByAppUserAndToken
-                (appUser, token);
-        if(receivedToken.isEmpty())throw new VerificationException("Invalid token");
-        else if(receivedToken.get().getExpirationTime().isBefore(LocalDateTime.now())){
-            tokenRepository.delete(receivedToken.get());
-            throw new VerificationException("Token is expired");
-        }
-        return receivedToken;
-    }
+//    private Optional<MyToken> validateReceivedToken(String token, AppUser appUser) {
+//        Optional<MyToken> receivedToken = tokenRepository.findMyTokenByAppUserAndToken
+//                (appUser, token);
+//        if(receivedToken.isEmpty())throw new VerificationException("Invalid token");
+//        else if(receivedToken.get().getExpirationTime().isBefore(LocalDateTime.now())){
+//            tokenRepository.delete(receivedToken.get());
+//            throw new VerificationException("Token is expired");
+//        }
+//        return receivedToken;
+//    }
 
 
     private void sendSms(String phoneNumber, String message) {
