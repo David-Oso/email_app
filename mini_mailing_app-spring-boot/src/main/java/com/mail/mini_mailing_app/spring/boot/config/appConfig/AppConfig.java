@@ -21,7 +21,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @RequiredArgsConstructor
 public class AppConfig {
     private final JpaUserDetailsService jpaUserDetailsService;
-    private final Environment environment;
 
     @Value("${cloudinary.cloud.name}")
     private String cloudName;
@@ -29,12 +28,21 @@ public class AppConfig {
     private String apiKey;
     @Value("${cloudinary.api.secret}")
     private String apiSecret;
-//
-//    private int saltLength;
-//    private int hashLength;
-//    private int parallelism;
-//    private int memory;
-//    private int iteration;
+
+    @Value("${saltLength}")
+    private int saltLength;
+
+    @Value("${hashLength}")
+    private int hashLength;
+
+    @Value("${parallelism}")
+    private int parallelism;
+
+    @Value("${memory}")
+    private int memory;
+
+    @Value("${iterations}")
+    private int iterations;
     @Bean
     public ModelMapper modelMapper(){
         return new ModelMapper();
@@ -51,13 +59,6 @@ public class AppConfig {
     }
     @Bean
     public PasswordEncoder passwordEncoder(){
-//        String apiSecret = environment.getProperty("api.secret");
-        int saltLength =
-//                saltLength
-//hashLength
-//parallelism
-//memory
-//iterations
         return new Argon2PasswordEncoder(saltLength, hashLength, parallelism, memory, iterations);
     }
 
