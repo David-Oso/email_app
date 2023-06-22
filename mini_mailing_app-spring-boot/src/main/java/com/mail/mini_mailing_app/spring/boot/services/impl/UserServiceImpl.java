@@ -16,6 +16,10 @@ import com.mail.mini_mailing_app.spring.boot.twilio.SmsSender;
 import com.mail.mini_mailing_app.spring.boot.utilities.MailAppUtils;
 import jakarta.validation.Valid;import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -31,13 +35,14 @@ import java.util.Optional;
 public class UserServiceImpl  implements UserService {
     private final AppUserService appUserService;
     private final UserRepository userRepository;
-//    private final SmsSender smsSender;
     private final InboxRepository inboxRepository;
     private final SentRepository sentRepository;
     private final DraftRepository draftRepository;
     private final ModelMapper modelMapper;
     private final CloudinaryService cloudinaryService;
     private final MyTokenService myTokenService;
+    private final PasswordEncoder passwordEncoder;
+    private final AuthenticationManager authenticationManager;
 
     @Override
     public String registerUser(RegisterUserRequest request) {
@@ -84,15 +89,28 @@ public class UserServiceImpl  implements UserService {
 
     @Override
     public AuthenticationResponse login(String email, String password) {
-        AppUser appUser = appUserService.getUserByEmail(email);
-        User authenticatedUser = userRepository.findByUserDetails(appUser).orElseThrow(
-                ()-> new NotFoundException("User with this user details not found"));
-        String savedPassword = authenticatedUser.getUserDetails().getPassword();
-        if(savedPassword.equals(password))return AuthenticationResponse.builder()
+//        AppUser appUser = appUserService.getUserByEmail(email);
+//        User authenticatedUser = userRepository.findByUserDetails(appUser).orElseThrow(
+//                ()-> new NotFoundException("User with this user details not found"));
+//        String savedPassword = authenticatedUser.getUserDetails().getPassword();
+//        if(savedPassword.equals(password))return AuthenticationResponse.builder()
+//                .message("Authentication Successful")
+//                .isSuccess(true)
+//                .build();
+//        throw new LoginException("Incorrect Password");
+
+        try{
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        email, password
+        ));
+        return AuthenticationResponse.builder()
                 .message("Authentication Successful")
                 .isSuccess(true)
                 .build();
-        throw new LoginException("Incorrect Password");
+        }catch (AuthenticationException exception){
+            throw new RuntimeException("Invalid password", exception);
+        }
     }
     @Override
     public User getUserById(Long userId) {
@@ -331,6 +349,8 @@ public class UserServiceImpl  implements UserService {
     private AppUser setAppUser(RegisterUserRequest request) {
         AppUser userDetails = modelMapper.map(request, AppUser.class);
         userDetails.setRole(Role.USER);
+        String encodedPassword = passwordEncoder.encode(request.getPassword());
+        userDetails.setPassword(encodedPassword);
         return userDetails;
     }
 

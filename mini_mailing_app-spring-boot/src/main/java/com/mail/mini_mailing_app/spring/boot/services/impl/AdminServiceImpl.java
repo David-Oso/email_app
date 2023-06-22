@@ -1,6 +1,7 @@
 package com.mail.mini_mailing_app.spring.boot.services.impl;
 
 import com.mail.mini_mailing_app.spring.boot.data.dto.request.AdminLoginRequest;
+import com.mail.mini_mailing_app.spring.boot.data.dto.response.AuthenticationResponse;
 import com.mail.mini_mailing_app.spring.boot.data.model.Admin;
 import com.mail.mini_mailing_app.spring.boot.data.model.AppUser;
 import com.mail.mini_mailing_app.spring.boot.data.model.Role;
@@ -11,6 +12,10 @@ import com.mail.mini_mailing_app.spring.boot.utilities.MailAppUtils;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -18,20 +23,25 @@ import org.springframework.stereotype.Service;
 public class AdminServiceImpl implements AdminService {
     private final AdminRepository adminRepository;
     private final AppUserService appUserService;
+    private final AuthenticationManager authenticationManager;
+    private final PasswordEncoder passwordEncoder;
 
     @Value("${adminPassword}")
     private String adminPassword;
+    @Value("${adminPhoneNumber}")
+    private String adminPhoneNumber;
 
-//    @PostConstruct
+    @PostConstruct
     private void registerAdmin(){
+        String encodedPassword = passwordEncoder.encode(adminPassword);
         AppUser appUser = AppUser.builder()
                 .email(MailAppUtils.APP_EMAIL)
                 .firstName("Email")
                 .lastName("App")
                 .isBlocked(false)
                 .isEnabled(true)
-                .phoneNumber("+2348045342389")
-                .password(adminPassword)
+                .phoneNumber(adminPhoneNumber)
+                .password(encodedPassword)
                 .role(Role.ADMIN)
                 .build();
         Admin admin = new Admin();
@@ -40,8 +50,30 @@ public class AdminServiceImpl implements AdminService {
         adminRepository.save(admin);
     }
 
+//
+//        try{
+//        authenticationManager.authenticate(
+//                new UsernamePasswordAuthenticationToken(
+//                        email, password
+//                ));
+//        return AuthenticationResponse.builder()
+//                .message("Authentication Successful")
+//                .isSuccess(true)
+//                .build();
+//    }catch (
+//    AuthenticationException exception){
+//        throw new RuntimeException("Invalid password", exception);
+//    }
+//
+
     @Override
-    public String login(AdminLoginRequest request) {
+    public AuthenticationResponse login(AdminLoginRequest request) {
+//        try{
+//            authenticationManager.authenticate(
+//                    new UsernamePasswordAuthenticationToken(
+//                            request.getEmail(),
+//                            request.getPassword()));
+//        }
         return null;
     }
 }
