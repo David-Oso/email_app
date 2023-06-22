@@ -13,4 +13,5 @@ public interface AppUserService {
     Optional<AppUser> getUserBy(String email);
     AppUser getUserByPhoneNumber(String phoneNumber);
     Optional<AppUser> getBy(String phoneNumber);
+    void sendSms(String phoneNumber, String message);
 }

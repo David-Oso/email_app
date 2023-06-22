@@ -1,4 +1,4 @@
-package com.mail.mini_mailing_app.spring.boot.config;
+package com.mail.mini_mailing_app.spring.boot.config.appConfig;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;

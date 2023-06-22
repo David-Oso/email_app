@@ -31,8 +31,7 @@ import java.util.Optional;
 public class UserServiceImpl  implements UserService {
     private final AppUserService appUserService;
     private final UserRepository userRepository;
-    private final SmsSender smsSender;
-    private final TokenRepository tokenRepository;
+//    private final SmsSender smsSender;
     private final InboxRepository inboxRepository;
     private final SentRepository sentRepository;
     private final DraftRepository draftRepository;
@@ -53,7 +52,7 @@ public class UserServiceImpl  implements UserService {
             String token = myTokenService.generateAndSaveToken(savedUser.getUserDetails());
             String message = getVerificationMessage(savedUser.getUserDetails(), token);
             String to = savedUser.getUserDetails().getPhoneNumber();
-            sendSms(to, message);
+            appUserService.sendSms(to, message);
             return """
                     An activation token has been sent to you account.
                     Please check your phone to input the token.
@@ -196,7 +195,7 @@ public class UserServiceImpl  implements UserService {
                 To change your password, please enter the following characters to verify that it is you
                                %s
                 """, token);
-        sendSms(phoneNumber, message);
+        appUserService.sendSms(phoneNumber, message);
         return ApiResponse.builder()
                 .message("Check your phone for the token to reset your password")
                 .isSuccess(true)
@@ -307,7 +306,7 @@ public class UserServiceImpl  implements UserService {
 
         String message = getVerificationMessage(appUser, token);
 
-        sendSms(phoneNumber, message);
+        appUserService.sendSms(phoneNumber, message);
         return """
                 Another verification token has been sent to you phone
                 Please, enter the verification token to enable your account.
@@ -406,12 +405,12 @@ public class UserServiceImpl  implements UserService {
 //    }
 
 
-    private void sendSms(String phoneNumber, String message) {
-        SmsRequest smsRequest = new SmsRequest();
-        smsRequest.setRecipientPhoneNumber(phoneNumber);
-        smsRequest.setMessage(message);
-        smsSender.sendSms(smsRequest);
-    }
+//    private void sendSms(String phoneNumber, String message) {
+//        SmsRequest smsRequest = new SmsRequest();
+//        smsRequest.setRecipientPhoneNumber(phoneNumber);
+//        smsRequest.setMessage(message);
+//        smsSender.sendSms(smsRequest);
+//    }
 
     private static Message createMessage(String subject, String messageBody) {
         Message message = new Message();

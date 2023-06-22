@@ -1,9 +1,10 @@
-package com.mail.mini_mailing_app.spring.boot.services;
+package com.mail.mini_mailing_app.spring.boot.services.impl;
 
 import com.mail.mini_mailing_app.spring.boot.data.model.AppUser;
 import com.mail.mini_mailing_app.spring.boot.data.model.MyToken;
 import com.mail.mini_mailing_app.spring.boot.data.repository.TokenRepository;
 import com.mail.mini_mailing_app.spring.boot.exception.VerificationException;
+import com.mail.mini_mailing_app.spring.boot.services.MyTokenService;
 import com.mail.mini_mailing_app.spring.boot.utilities.MailAppUtils;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
