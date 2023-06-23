@@ -86,7 +86,7 @@ public class UserServiceImpl  implements UserService {
 //            tokenRepository.delete(receivedToken.get());
             myTokenService.deleteToken(receivedToken.get());
             String message = "Verification Successful";
-            return getAuthenticationResponse(appUser, message);
+            return jwtTokenService.getAuthenticationResponse(appUser, message);
         }
     }
 
@@ -113,25 +113,25 @@ public class UserServiceImpl  implements UserService {
                         email, password
         ));
         String message = "Authentication Successful";
-        return getAuthenticationResponse(appUser, message);
+        return jwtTokenService.getAuthenticationResponse(appUser, message);
         }catch (AuthenticationException exception){
-            throw new RuntimeException("Invalid password", exception);
+            throw new RuntimeException("Incorrect password", exception);
         }
     }
 
-    private AuthenticationResponse getAuthenticationResponse(AppUser appUser, String message) {
-        UserDetails userDetails = jwtTokenService.getUserDetails(appUser.getEmail());
-        String accessToken = jwtService.generateAccessToken(userDetails);
-        String refreshToken = jwtService.generateRefreshToken(userDetails);
-        jwtTokenService.revokeAllUserTokens(appUser);
-        jwtTokenService.saveUserToken(appUser, accessToken);
-        return AuthenticationResponse.builder()
-                .message(message)
-                .isSuccess(true)
-                .accessToken(accessToken)
-                .refreshToken(refreshToken)
-                .build();
-    }
+//    private AuthenticationResponse getAuthenticationResponse(AppUser appUser, String message) {
+//        UserDetails userDetails = jwtTokenService.getUserDetails(appUser.getEmail());
+//        String accessToken = jwtService.generateAccessToken(userDetails);
+//        String refreshToken = jwtService.generateRefreshToken(userDetails);
+//        jwtTokenService.revokeAllUserTokens(appUser);
+//        jwtTokenService.saveUserToken(appUser, accessToken);
+//        return AuthenticationResponse.builder()
+//                .message(message)
+//                .isSuccess(true)
+//                .accessToken(accessToken)
+//                .refreshToken(refreshToken)
+//                .build();
+//    }
 
     @Override
     public User getUserById(Long userId) {
@@ -380,20 +380,15 @@ public class UserServiceImpl  implements UserService {
     }
 
     private LocalDate convertToLocalDate(String dateOfBirth) {
-//        if(dateOfBirth == null)throw new
-//                EmailAppException("Date of birth cannot be null");
-//        else{
             DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
             LocalDate date = LocalDate.parse(dateOfBirth, dateTimeFormatter);
             if(date.isAfter(LocalDate.now()))
                 throw new EmailAppException("Date must be in the past");
             return date;
-//        }
     }
 
     private String checkWhetherUserIsEnableAndNotLocked(AppUser appUser) {
         String to = appUser.getPhoneNumber();
-
         if(appUser.isEnabled() && !appUser.isBlocked())
             throw new AlreadyExistsException(String.format(
                     "user with email %s already exists", appUser.getEmail()));
@@ -402,18 +397,6 @@ public class UserServiceImpl  implements UserService {
                     "Account registered with this email is blocked");
         else return resendVerificationToken(to);
     }
-
-//    private String generateAndSaveToken(AppUser appUser) {
-//        Optional<MyToken> existingToken = tokenRepository.findMyTokenByAppUser(appUser);
-//        existingToken.ifPresent(tokenRepository::delete);
-//        String generatedToken = MailAppUtils.generateRandomString(6);
-//        MyToken myToken = MyToken.builder()
-//                .appUser(appUser)
-//                .token(generatedToken)
-//                .build();
-//        tokenRepository.save(myToken);
-//        return generatedToken;
-//    }
 
     private static String getVerificationMessage(AppUser appUser, String token) {
         return String.format("""

@@ -79,4 +79,18 @@ public class JwtTokenServiceImpl implements JwtTokenService {
     public UserDetails getUserDetails(String email) {
         return userDetailsService.loadUserByUsername(email);
     }
+    @Override
+     public AuthenticationResponse getAuthenticationResponse(AppUser appUser, String message) {
+        UserDetails userDetails = getUserDetails(appUser.getEmail());
+        String accessToken = jwtService.generateAccessToken(userDetails);
+        String refreshToken = jwtService.generateRefreshToken(userDetails);
+        revokeAllUserTokens(appUser);
+        saveUserToken(appUser, accessToken);
+        return AuthenticationResponse.builder()
+                .message(message)
+                .isSuccess(true)
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .build();
+    }
 }

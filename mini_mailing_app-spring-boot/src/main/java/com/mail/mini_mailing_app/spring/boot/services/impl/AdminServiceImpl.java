@@ -8,6 +8,7 @@ import com.mail.mini_mailing_app.spring.boot.data.model.Role;
 import com.mail.mini_mailing_app.spring.boot.data.repository.AdminRepository;
 import com.mail.mini_mailing_app.spring.boot.services.AdminService;
 import com.mail.mini_mailing_app.spring.boot.services.AppUserService;
+import com.mail.mini_mailing_app.spring.boot.services.JwtTokenService;
 import com.mail.mini_mailing_app.spring.boot.utilities.MailAppUtils;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +26,7 @@ public class AdminServiceImpl implements AdminService {
     private final AppUserService appUserService;
     private final AuthenticationManager authenticationManager;
     private final PasswordEncoder passwordEncoder;
+    private final JwtTokenService jwtTokenService;
 
     @Value("${adminPassword}")
     private String adminPassword;
@@ -50,21 +52,6 @@ public class AdminServiceImpl implements AdminService {
         adminRepository.save(admin);
     }
 
-//
-//        try{
-//        authenticationManager.authenticate(
-//                new UsernamePasswordAuthenticationToken(
-//                        email, password
-//                ));
-//        return AuthenticationResponse.builder()
-//                .message("Authentication Successful")
-//                .isSuccess(true)
-//                .build();
-//    }catch (
-//    AuthenticationException exception){
-//        throw new RuntimeException("Invalid password", exception);
-//    }
-//
 
     @Override
     public AuthenticationResponse login(AdminLoginRequest request) {
