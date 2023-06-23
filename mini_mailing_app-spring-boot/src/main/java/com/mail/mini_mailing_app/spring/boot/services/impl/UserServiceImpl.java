@@ -49,7 +49,6 @@ public class UserServiceImpl  implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtTokenService jwtTokenService;
-    private final JwtService jwtService;
 
     @Override
     public String registerUser(RegisterUserRequest request) {

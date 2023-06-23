@@ -63,12 +63,8 @@ public class AdminServiceImpl implements AdminService {
             AppUser appUser = appUserService.getUserByEmail(request.getEmail());
             Admin admin = adminRepository.findByUserDetails(appUser).orElse(null);
             if(admin != null && admin.getIdentity().equals(request.getIdentity())){
-                return AuthenticationResponse.builder()
-                        .message("Authentication Successful")
-                        .isSuccess(true)
-                        .accessToken("")
-                        .refreshToken("")
-                        .build();
+                String message = "Authentication Successful";
+                return jwtTokenService.getAuthenticationResponse(appUser, message);
             }
         }catch (AuthenticationException exception){
             throw new RuntimeException("Incorrect password", exception);
