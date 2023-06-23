@@ -31,7 +31,7 @@ public class AdminServiceImpl implements AdminService {
     @Value("${adminPhoneNumber}")
     private String adminPhoneNumber;
 
-    @PostConstruct
+//    @PostConstruct
     private void registerAdmin(){
         String encodedPassword = passwordEncoder.encode(adminPassword);
         AppUser appUser = AppUser.builder()
@@ -68,12 +68,24 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     public AuthenticationResponse login(AdminLoginRequest request) {
-//        try{
-//            authenticationManager.authenticate(
-//                    new UsernamePasswordAuthenticationToken(
-//                            request.getEmail(),
-//                            request.getPassword()));
-//        }
-        return null;
+        try{
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            request.getEmail(),
+                            request.getPassword()));
+            AppUser appUser = appUserService.getUserByEmail(request.getEmail());
+            Admin admin = adminRepository.findByUserDetails(appUser).orElse(null);
+            if(admin != null && admin.getIdentity().equals(request.getIdentity())){
+                return AuthenticationResponse.builder()
+                        .message("Authentication Successful")
+                        .isSuccess(true)
+                        .accessToken("")
+                        .refreshToken("")
+                        .build();
+            }
+        }catch (AuthenticationException exception){
+            throw new RuntimeException("Incorrect password", exception);
+        }
+        throw new RuntimeException("Authentication Failure");
     }
 }

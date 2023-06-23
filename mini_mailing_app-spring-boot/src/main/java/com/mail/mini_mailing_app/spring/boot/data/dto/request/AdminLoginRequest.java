@@ -10,7 +10,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class AdminLoginRequest {
-    private String identity;
     private String email;
     private String password;
+    private String identity;
 }
