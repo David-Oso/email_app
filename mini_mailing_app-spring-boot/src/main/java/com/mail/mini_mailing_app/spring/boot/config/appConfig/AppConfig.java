@@ -2,13 +2,13 @@ package com.mail.mini_mailing_app.spring.boot.config.appConfig;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
-import com.mail.mini_mailing_app.spring.boot.config.security.JpaUserDetailsService;
+import com.mail.mini_mailing_app.spring.boot.data.repository.AppUserRepository;
+import com.mail.mini_mailing_app.spring.boot.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.env.Environment;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -20,7 +20,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @Configuration
 @RequiredArgsConstructor
 public class AppConfig {
-    private final JpaUserDetailsService jpaUserDetailsService;
+    private final AppUserRepository appUserRepository;
 
     @Value("${cloudinary.cloud.name}")
     private String cloudName;
@@ -64,7 +64,8 @@ public class AppConfig {
 
     @Bean
     public UserDetailsService userDetailsService(){
-        return jpaUserDetailsService;
+        return email -> appUserRepository.findByEmail(email).orElseThrow(
+                ()-> new NotFoundException("User with this email not found"));
     }
 
     @Bean

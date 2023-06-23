@@ -30,7 +30,7 @@ public class UserController {
     }
     @PostMapping("verify")
     public ResponseEntity<?> verify(@Valid @RequestBody VerificationRequest request){
-        String response = userService.verifyUser(request);
+        AuthenticationResponse response = userService.verifyUser(request);
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
     }
     @PostMapping("resent_verification_token")

@@ -21,9 +21,9 @@ public class JwtService {
     @Value("${jwtSecret}")
     private String secretKey;
     @Value("${accessTokenExpiration}")
-    private Long accessExpiration;
+    private long accessTokenExpiration;
     @Value("${refreshTokenExpiration}")
-    private Long refreshExpiration;
+    private long refreshTokenExpiration;
 
     public String extractUsername(String token){
         return extractClaim(token, Claims::getSubject);
@@ -35,18 +35,19 @@ public class JwtService {
     }
 
     public String generateAccessToken(UserDetails userDetails){
-        return buildJwtToken(new HashMap<>(), userDetails, accessExpiration);
+        return generateToken(new HashMap<>(), userDetails);
+    }
+    private String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {
+        return buildToken(extraClaims, userDetails, accessTokenExpiration);
     }
     public String generateRefreshToken(UserDetails userDetails){
-        return buildJwtToken(new HashMap<>(), userDetails, refreshExpiration);
+        return buildToken(new HashMap<>(), userDetails, refreshTokenExpiration);
     }
 
-    private String buildJwtToken(Map<String, Object> claims, UserDetails userDetails, Long expiration){
-        return Jwts
-                .builder()
-                .setClaims(claims)
+    private String buildToken(Map<String, Object> extraClaims, UserDetails userDetails, long expiration) {
+        return Jwts.builder()
+                .setClaims(extraClaims)
                 .setSubject(userDetails.getUsername())
-                .setIssuer("mail_app")
                 .setIssuedAt(new Date())
                 .setExpiration(Date.from(Instant.now().plusSeconds(expiration)))
                 .signWith(getSignInKey(), SignatureAlgorithm.HS512)
@@ -55,7 +56,7 @@ public class JwtService {
 
     public boolean isTokenValid(String token, UserDetails userDetails){
         final String userName = extractUsername(token);
-        return (userName.equals(userDetails.getUsername())) && !isTokenExpired(token);
+        return userName.equals(userDetails.getUsername()) && !isTokenExpired(token);
     }
 
     private boolean isTokenExpired(String token) {
@@ -66,10 +67,8 @@ public class JwtService {
         return extractClaim(token, Claims::getExpiration);
     }
 
-
     private Claims extractAllClaims(String token) {
-        return Jwts
-                .parserBuilder()
+        return Jwts.parserBuilder()
                 .setSigningKey(getSignInKey())
                 .build()
                 .parseClaimsJws(token)

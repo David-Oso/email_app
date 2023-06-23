@@ -1,7 +1,5 @@
 package com.mail.mini_mailing_app.spring.boot.services.impl;
 
-import com.mail.mini_mailing_app.spring.boot.config.security.JwtService;
-import com.mail.mini_mailing_app.spring.boot.config.security.SecureUser;
 import com.mail.mini_mailing_app.spring.boot.data.dto.request.*;
 import com.mail.mini_mailing_app.spring.boot.data.dto.response.ApiResponse;
 import com.mail.mini_mailing_app.spring.boot.data.dto.response.AuthenticationResponse;
@@ -11,19 +9,14 @@ import com.mail.mini_mailing_app.spring.boot.data.model.*;
 import com.mail.mini_mailing_app.spring.boot.data.repository.*;
 import com.mail.mini_mailing_app.spring.boot.exception.*;
 import com.mail.mini_mailing_app.spring.boot.services.AppUserService;
-import com.mail.mini_mailing_app.spring.boot.services.JwtTokenService;
 import com.mail.mini_mailing_app.spring.boot.services.MyTokenService;
 import com.mail.mini_mailing_app.spring.boot.services.UserService;
 import com.mail.mini_mailing_app.spring.boot.services.cloudinary.CloudinaryService;
-import com.mail.mini_mailing_app.spring.boot.twilio.SmsSender;
-import com.mail.mini_mailing_app.spring.boot.utilities.MailAppUtils;
-import jakarta.validation.Valid;import lombok.AllArgsConstructor;
+import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -48,7 +41,6 @@ public class UserServiceImpl  implements UserService {
     private final MyTokenService myTokenService;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
-    private final JwtTokenService jwtTokenService;
 
     @Override
     public String registerUser(RegisterUserRequest request) {
@@ -85,7 +77,7 @@ public class UserServiceImpl  implements UserService {
 //            tokenRepository.delete(receivedToken.get());
             myTokenService.deleteToken(receivedToken.get());
             String message = "Verification Successful";
-            return jwtTokenService.getAuthenticationResponse(appUser, message);
+            return null;
         }
     }
 
@@ -112,7 +104,7 @@ public class UserServiceImpl  implements UserService {
                         email, password
         ));
         String message = "Authentication Successful";
-        return jwtTokenService.getAuthenticationResponse(appUser, message);
+        return null;
         }catch (AuthenticationException exception){
             throw new RuntimeException("Incorrect password", exception);
         }

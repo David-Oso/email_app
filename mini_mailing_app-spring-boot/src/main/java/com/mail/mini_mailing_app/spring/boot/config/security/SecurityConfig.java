@@ -29,38 +29,38 @@ public class SecurityConfig {
     private final AuthenticationProvider authenticationProvider;
     private final LogoutHandler logoutHandler;
 
-    private final String[] AUTHENTICATION_WHITE_LIST = {"api/v1/mailapp/user/register"};
+    private final String[] AUTHENTICATION_WHITE_LIST = {"api/va/mailapp/user/register"};
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http)throws Exception{
-        return http
-                .csrf(AbstractHttpConfigurer::disable)
+        return http.csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(sessionManagement ->
                         sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider)
-//                .addFilterAt(authenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(authenticationFilter, UsernamePasswordAuthenticationFilter.class)
+//                .addFilterAt(authenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(HttpMethod.POST, AUTHENTICATION_WHITE_LIST)
                         .permitAll()
                         .anyRequest()
                         .authenticated())
                 .logout(logout -> logout
-                        .logoutUrl("api/v1/mailapp/user/logout")
+                        .logoutUrl("api/va/mailapp/user/logout")
                         .addLogoutHandler(logoutHandler)
                         .logoutSuccessHandler(((request, response, authentication) -> SecurityContextHolder.clearContext())))
                 .build();
+
     }
 
     private CorsConfigurationSource corsConfigurationSource() {
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        UrlBasedCorsConfigurationSource corsConfigurationSource = new UrlBasedCorsConfigurationSource();
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(List.of("*"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE"));
 //        configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowedHeaders(List.of("Content-Type", "Authorization"));
-        source.registerCorsConfiguration("/**", configuration);
-        return source;
+        corsConfigurationSource.registerCorsConfiguration("/**", configuration);
+        return corsConfigurationSource;
     }
 }
