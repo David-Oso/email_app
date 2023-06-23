@@ -1,5 +1,7 @@
 package com.mail.mini_mailing_app.spring.boot.services.impl;
 
+import com.mail.mini_mailing_app.spring.boot.config.security.JwtService;
+import com.mail.mini_mailing_app.spring.boot.config.security.SecureUser;
 import com.mail.mini_mailing_app.spring.boot.data.dto.request.*;
 import com.mail.mini_mailing_app.spring.boot.data.dto.response.ApiResponse;
 import com.mail.mini_mailing_app.spring.boot.data.dto.response.AuthenticationResponse;
@@ -9,6 +11,7 @@ import com.mail.mini_mailing_app.spring.boot.data.model.*;
 import com.mail.mini_mailing_app.spring.boot.data.repository.*;
 import com.mail.mini_mailing_app.spring.boot.exception.*;
 import com.mail.mini_mailing_app.spring.boot.services.AppUserService;
+import com.mail.mini_mailing_app.spring.boot.services.JwtTokenService;
 import com.mail.mini_mailing_app.spring.boot.services.MyTokenService;
 import com.mail.mini_mailing_app.spring.boot.services.UserService;
 import com.mail.mini_mailing_app.spring.boot.services.cloudinary.CloudinaryService;
@@ -19,6 +22,8 @@ import org.modelmapper.ModelMapper;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -43,6 +48,8 @@ public class UserServiceImpl  implements UserService {
     private final MyTokenService myTokenService;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
+    private final JwtTokenService jwtTokenService;
+    private final JwtService jwtService;
 
     @Override
     public String registerUser(RegisterUserRequest request) {
@@ -66,7 +73,7 @@ public class UserServiceImpl  implements UserService {
     }
 
     @Override
-    public String verifyUser(VerificationRequest verificationRequest) {
+    public AuthenticationResponse verifyUser(VerificationRequest verificationRequest) {
         AppUser appUser = appUserService.getBy
                 (verificationRequest.getPhoneNUmber()).orElse(null);
         if (appUser == null)throw new VerificationException("Invalid phone number");
@@ -78,8 +85,9 @@ public class UserServiceImpl  implements UserService {
 //            send mail to the user
 //            tokenRepository.delete(receivedToken.get());
             myTokenService.deleteToken(receivedToken.get());
+            String message = "Verification Successful";
+            return getAuthenticationResponse(appUser, message);
         }
-        return "Verification Successful";
     }
 
 
@@ -89,7 +97,7 @@ public class UserServiceImpl  implements UserService {
 
     @Override
     public AuthenticationResponse login(String email, String password) {
-//        AppUser appUser = appUserService.getUserByEmail(email);
+        AppUser appUser = appUserService.getUserByEmail(email);
 //        User authenticatedUser = userRepository.findByUserDetails(appUser).orElseThrow(
 //                ()-> new NotFoundException("User with this user details not found"));
 //        String savedPassword = authenticatedUser.getUserDetails().getPassword();
@@ -104,14 +112,27 @@ public class UserServiceImpl  implements UserService {
                 new UsernamePasswordAuthenticationToken(
                         email, password
         ));
-        return AuthenticationResponse.builder()
-                .message("Authentication Successful")
-                .isSuccess(true)
-                .build();
+        String message = "Authentication Successful";
+        return getAuthenticationResponse(appUser, message);
         }catch (AuthenticationException exception){
             throw new RuntimeException("Invalid password", exception);
         }
     }
+
+    private AuthenticationResponse getAuthenticationResponse(AppUser appUser, String message) {
+        UserDetails userDetails = jwtTokenService.getUserDetails(appUser.getEmail());
+        String accessToken = jwtService.generateAccessToken(userDetails);
+        String refreshToken = jwtService.generateRefreshToken(userDetails);
+        jwtTokenService.revokeAllUserTokens(appUser);
+        jwtTokenService.saveUserToken(appUser, accessToken);
+        return AuthenticationResponse.builder()
+                .message(message)
+                .isSuccess(true)
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .build();
+    }
+
     @Override
     public User getUserById(Long userId) {
         return userRepository.findById(userId).orElseThrow(

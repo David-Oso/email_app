@@ -74,4 +74,9 @@ public class JwtTokenServiceImpl implements JwtTokenService {
             }
         }
     }
+
+    @Override
+    public UserDetails getUserDetails(String email) {
+        return userDetailsService.loadUserByUsername(email);
+    }
 }

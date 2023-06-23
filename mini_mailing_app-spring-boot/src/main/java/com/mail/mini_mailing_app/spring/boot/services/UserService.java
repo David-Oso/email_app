@@ -12,7 +12,7 @@ import com.mail.mini_mailing_app.spring.boot.data.model.User;
 
 public interface UserService {
     String registerUser(RegisterUserRequest request);
-    String verifyUser(VerificationRequest verificationRequest);
+    AuthenticationResponse verifyUser(VerificationRequest verificationRequest);
     AuthenticationResponse login(String email, String password);
     User getUserById(Long userId);
     MailResponse sendMail(MailRequest mailRequest);
