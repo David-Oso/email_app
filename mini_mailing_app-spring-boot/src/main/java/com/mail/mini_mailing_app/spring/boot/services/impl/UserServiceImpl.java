@@ -9,6 +9,7 @@ import com.mail.mini_mailing_app.spring.boot.data.model.*;
 import com.mail.mini_mailing_app.spring.boot.data.repository.*;
 import com.mail.mini_mailing_app.spring.boot.exception.*;
 import com.mail.mini_mailing_app.spring.boot.services.AppUserService;
+import com.mail.mini_mailing_app.spring.boot.services.JwtTokenService;
 import com.mail.mini_mailing_app.spring.boot.services.MyTokenService;
 import com.mail.mini_mailing_app.spring.boot.services.UserService;
 import com.mail.mini_mailing_app.spring.boot.services.cloudinary.CloudinaryService;
@@ -41,6 +42,7 @@ public class UserServiceImpl  implements UserService {
     private final MyTokenService myTokenService;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
+    private final JwtTokenService jwtTokenService;
 
     @Override
     public String registerUser(RegisterUserRequest request) {
@@ -77,7 +79,8 @@ public class UserServiceImpl  implements UserService {
 //            tokenRepository.delete(receivedToken.get());
             myTokenService.deleteToken(receivedToken.get());
             String message = "Verification Successful";
-            return null;
+            return this.jwtTokenService
+                    .getAuthenticationResponse(appUser, message);
         }
     }
 
@@ -104,7 +107,7 @@ public class UserServiceImpl  implements UserService {
                         email, password
         ));
         String message = "Authentication Successful";
-        return null;
+        return this.jwtTokenService.getAuthenticationResponse(appUser, message);
         }catch (AuthenticationException exception){
             throw new RuntimeException("Incorrect password", exception);
         }

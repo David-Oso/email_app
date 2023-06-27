@@ -8,7 +8,9 @@ import com.mail.mini_mailing_app.spring.boot.data.model.Role;
 import com.mail.mini_mailing_app.spring.boot.data.repository.AdminRepository;
 import com.mail.mini_mailing_app.spring.boot.services.AdminService;
 import com.mail.mini_mailing_app.spring.boot.services.AppUserService;
+import com.mail.mini_mailing_app.spring.boot.services.JwtTokenService;
 import com.mail.mini_mailing_app.spring.boot.utilities.MailAppUtils;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -24,6 +26,7 @@ public class AdminServiceImpl implements AdminService {
     private final AppUserService appUserService;
     private final AuthenticationManager authenticationManager;
     private final PasswordEncoder passwordEncoder;
+    private final JwtTokenService jwtTokenService;
 
     @Value("${adminPassword}")
     private String adminPassword;
@@ -61,7 +64,8 @@ public class AdminServiceImpl implements AdminService {
             Admin admin = adminRepository.findByUserDetails(appUser).orElse(null);
             if(admin != null && admin.getIdentity().equals(request.getIdentity())){
                 String message = "Authentication Successful";
-                return null;
+                return this.jwtTokenService
+                        .getAuthenticationResponse(appUser, message);
             }
         }catch (AuthenticationException exception){
             throw new RuntimeException("Incorrect password", exception);
