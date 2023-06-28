@@ -65,7 +65,7 @@ public class AppConfig {
     @Bean
     public UserDetailsService userDetailsService(){
         return email -> appUserRepository.findByEmail(email).orElseThrow(
-                ()-> new NotFoundException("User with this email not found"));
+                ()-> new NotFoundException("User with email %s not found".formatted(email)));
     }
 
     @Bean
