@@ -21,17 +21,19 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class AuthenticationFilter extends OncePerRequestFilter {
     private final JwtService jwtService;
-    private UserDetailsService userDetailsService;
+    private final UserDetailsService userDetailsService;
     private final JwtTokenRepository jwtTokenRepository;
 
     @Override
     protected void doFilterInternal(@Nonnull HttpServletRequest request,
                                     @Nonnull HttpServletResponse response,
                                     @Nonnull FilterChain filterChain) throws ServletException, IOException {
-//        if(request.getServletPath().equals("")){
-//            filterChain.doFilter(request, response);
-//            return;
-//        }
+        if(request.getServletPath().equals("api/v1/mailapp/user/register")||
+        request.getServletPath().equals("api/v1/mailapp/user/login")
+        ){
+            filterChain.doFilter(request, response);
+            return;
+        }
         final String authHeader = request.getHeader("Authorization");
         final String jwt;
         final String username;

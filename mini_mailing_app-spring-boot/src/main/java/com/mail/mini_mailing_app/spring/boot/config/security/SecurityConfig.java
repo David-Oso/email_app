@@ -30,6 +30,7 @@ public class SecurityConfig {
     private final LogoutHandler logoutHandler;
 
     private final String[] AUTHENTICATION_WHITE_LIST = {"api/v1/mailapp/user/register"};
+//    private final String[] AUTHENTICATION_WHITE_LIST = {"api/v1/mailapp/user/**"};
 
 
     @Bean
@@ -60,8 +61,8 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(List.of("*"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE"));
-//        configuration.setAllowedHeaders(List.of("*"));
-        configuration.setAllowedHeaders(List.of("Content-Type", "Authorization"));
+        configuration.setAllowedHeaders(List.of("*"));
+//        configuration.setAllowedHeaders(List.of("Content-Type", "Authorization"));
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }

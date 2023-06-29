@@ -33,7 +33,7 @@ public class AdminServiceImpl implements AdminService {
     @Value("${adminPhoneNumber}")
     private String adminPhoneNumber;
 
-    @PostConstruct
+//    @PostConstruct
     private void registerAdmin(){
         String encodedPassword = passwordEncoder.encode(adminPassword);
         AppUser appUser = AppUser.builder()

@@ -53,7 +53,7 @@ class UserServiceImplTest {
 
         verificationRequest1 = new VerificationRequest();
         verificationRequest1.setPhoneNUmber("+2349030400837");
-        verificationRequest1.setVerificationToken("-9LtNpO9");
+        verificationRequest1.setVerificationToken("O9bQcZf5");
         verificationRequest1.setEmail("ematemz001@gmail.com");
 
         verificationRequest2 = new VerificationRequest();
