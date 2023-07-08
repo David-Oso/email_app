@@ -14,7 +14,8 @@ import static com.mail.mini_mailing_app.spring.boot.utilities.MailAppUtils.*;
 @NoArgsConstructor
 @Getter
 @Setter
-public class RegisterUserRequest {
+public class
+RegisterUserRequest {
 
     @NotNull(message = "field first name cannot be null")
     @NotEmpty(message = "field first name cannot be empty")

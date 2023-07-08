@@ -9,7 +9,6 @@ import com.mail.mini_mailing_app.spring.boot.data.repository.AdminRepository;
 import com.mail.mini_mailing_app.spring.boot.services.AdminService;
 import com.mail.mini_mailing_app.spring.boot.services.AppUserService;
 import com.mail.mini_mailing_app.spring.boot.services.JwtTokenService;
-import com.mail.mini_mailing_app.spring.boot.utilities.MailAppUtils;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,18 +27,27 @@ public class AdminServiceImpl implements AdminService {
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenService jwtTokenService;
 
-    @Value("${adminPassword}")
-    private String adminPassword;
+
+    @Value("${adminFirstName}")
+    private String adminFirstName;
+    @Value("${adminLastName}")
+    private String adminLastName;
     @Value("${adminPhoneNumber}")
     private String adminPhoneNumber;
+    @Value("${adminEmail}")
+    private String adminEmail;
+    @Value("${adminPassword}")
+    private String adminPassword;
+    @Value("${adminId}")
+    private String adminId;
 
 //    @PostConstruct
     private void registerAdmin(){
         String encodedPassword = passwordEncoder.encode(adminPassword);
         AppUser appUser = AppUser.builder()
-                .email(MailAppUtils.APP_EMAIL)
-                .firstName("Email")
-                .lastName("App")
+                .email(adminEmail)
+                .firstName(adminFirstName)
+                .lastName(adminLastName)
                 .isBlocked(false)
                 .isEnabled(true)
                 .phoneNumber(adminPhoneNumber)
@@ -48,7 +56,7 @@ public class AdminServiceImpl implements AdminService {
                 .build();
         Admin admin = new Admin();
         admin.setUserDetails(appUser);
-        admin.setIdentity("MailApp_101");
+        admin.setIdentity(adminId);
         adminRepository.save(admin);
     }
 
