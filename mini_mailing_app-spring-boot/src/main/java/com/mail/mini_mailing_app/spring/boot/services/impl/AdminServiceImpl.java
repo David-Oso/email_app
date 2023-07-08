@@ -60,7 +60,6 @@ public class AdminServiceImpl implements AdminService {
         adminRepository.save(admin);
     }
 
-
     @Override
     public AuthenticationResponse login(AdminLoginRequest request) {
         try{
